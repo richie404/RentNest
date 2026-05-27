@@ -81,6 +81,19 @@ public class BookPropertyController {
     /* -----------------------------------------------------------
        🔹 Back button
        ----------------------------------------------------------- */
+    @FXML
+    private void handleBackToProperty() {
+        try {
+            if (listing != null) {
+                Router.goToDetails(listing.getId());
+            } else {
+                Router.goToBrowse();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Router.goToBrowse();
+        }
+    }
 
     /* -----------------------------------------------------------
        🔹 Alert helper

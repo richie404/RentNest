@@ -2,8 +2,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 💬 ChatController — RentNest Chat Assistant (AI-style chatbot)
@@ -17,9 +15,6 @@ public class ChatController {
     @FXML private VBox chatContainer;
     @FXML private TextField messageField;
     @FXML private Button sendButton;
-
-    // In-memory chat history
-    private final List<String> conversation = new ArrayList<>();
 
     /* -----------------------------------------------------------
        🧩 Initialize chat on load

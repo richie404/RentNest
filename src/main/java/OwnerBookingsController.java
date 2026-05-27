@@ -29,7 +29,7 @@ public class OwnerBookingsController {
     @FXML
     private void initialize() {
         colId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-        colProperty.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("listingId"));
+        colProperty.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("propertyId")); // ✅ updated
         colRenter.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("renterId"));
         colStart.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("startDate"));
         colEnd.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("endDate"));
@@ -120,9 +120,5 @@ public class OwnerBookingsController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-    @FXML
-    private void handleRefresh() {
-        loadBookings();
     }
 }

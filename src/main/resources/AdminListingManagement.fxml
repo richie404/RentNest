@@ -6,17 +6,17 @@
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="AdminListingManagementController"
       spacing="12"
-      stylesheets="@shared.css">
+      stylesheets="@admin-shared.css">
 
     <!-- Correct padding syntax -->
     <padding>
         <Insets top="15" right="15" bottom="15" left="15"/>
     </padding>
 
-    <Label text="📋 All Listings"
+    <Label text="Pending Listings"
            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
-    <TableView fx:id="listingTable" styleClass="table-view" VBox.vgrow="ALWAYS">
+    <TableView fx:id="listingTable" prefHeight="400">
         <columns>
             <TableColumn fx:id="colTitle" text="Title" prefWidth="180"/>
             <TableColumn fx:id="colLocation" text="Location" prefWidth="180"/>

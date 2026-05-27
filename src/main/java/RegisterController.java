@@ -44,7 +44,7 @@ public class RegisterController extends BaseController {
             }
 
             // Register user
-            int userId = userDAO.register(username, email, password, role);
+            userDAO.register(username, email, password, role);
 
             // Success feedback
             info("Welcome!", "Account created successfully. You can log in now.");

@@ -8,32 +8,43 @@
             stylesheets="@RenterDashboard.css"
             prefWidth="950" prefHeight="700">
 
+    <!-- 🔹 Shared Top Bar -->
     <top>
         <fx:include source="TopBar.fxml" fx:id="topBar"/>
     </top>
 
+    <!-- 🔹 Dashboard Tabs -->
     <center>
         <TabPane prefWidth="900" prefHeight="650">
             <tabs>
 
+                <!-- 🏡 Dashboard Tab -->
                 <Tab text="Dashboard" closable="false">
                     <BorderPane>
+
+                        <!-- 🔹 Header -->
                         <top>
                             <HBox spacing="20" styleClass="header">
                                 <padding>
                                     <Insets top="20" right="20" bottom="20" left="20"/>
                                 </padding>
+
+
                                 <Label text="🏡 Renter Dashboard" styleClass="label-title"/>
                                 <Pane HBox.hgrow="ALWAYS"/>
+
                                 <Button text="Browse Properties"
                                         onAction="#handleBrowse"
                                         styleClass="button-secondary"/>
                             </HBox>
                         </top>
 
+                        <!-- 🔹 Favorites Section -->
                         <center>
                             <VBox spacing="15" alignment="TOP_CENTER" style="-fx-padding: 20;">
-                                <Label text="Favorite Properties" styleClass="page-title"/>
+                                <Label text="Favorite Properties"
+                                       styleClass="page-title"/>
+
                                 <ListView fx:id="favoritesList"
                                           prefWidth="750"
                                           prefHeight="400"
@@ -43,13 +54,17 @@
                     </BorderPane>
                 </Tab>
 
+                <!-- 💬 Messages Tab -->
                 <Tab text="Messages" closable="false">
                     <VBox spacing="12" alignment="TOP_CENTER" style="-fx-padding: 20;">
-                        <Label text="Your Chat History" styleClass="page-title"/>
+                        <Label text="Your Chat History"
+                               styleClass="page-title"/>
+
                         <ListView fx:id="messageList"
                                   prefWidth="750"
                                   prefHeight="400"
                                   styleClass="list-view"/>
+
                         <HBox spacing="10" alignment="CENTER_RIGHT">
                             <Pane HBox.hgrow="ALWAYS"/>
                             <Button text="💬 View Chat"
@@ -60,9 +75,11 @@
                 </Tab>
 
                 <!-- 📅 My Bookings Tab -->
+                <!-- 📅 My Bookings Tab -->
                 <Tab text="My Bookings" closable="false">
-                    <fx:include source="RenterBookings.fxml" fx:id="renterBookingsTab"/>
+                    <fx:include source="RenterBookings.fxml" fx:id="RenterBookingsController"/>
                 </Tab>
+
 
             </tabs>
         </TabPane>

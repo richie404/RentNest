@@ -1,4 +1,3 @@
-// File: BookingDAO.java
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,17 +28,15 @@ public class BookingDAO {
     }
 
     /* -----------------------------------------------------------
-       🔹 Check Property Availability (fixed overlap logic)
+       🔹 Check Property Availability
        ----------------------------------------------------------- */
     public boolean isPropertyAvailable(int listingId, Date startDate, Date endDate) {
-        // Overlap exists when (newStart <= existingEnd) AND (newEnd >= existingStart)
-        final String sql = """
-            SELECT COUNT(*)
-            FROM bookings
-            WHERE listing_id = ?
-              AND status IN ('PENDING_OWNER_APPROVAL','CONFIRMED','APPROVED','PENDING')
-              AND (? <= end_date AND ? >= start_date)
-        """;
+        String sql = """
+        SELECT COUNT(*) FROM bookings
+        WHERE listing_id = ?
+          AND status IN ('PENDING','APPROVED','CONFIRMED','PENDING_OWNER_APPROVAL')
+          AND (? BETWEEN start_date AND end_date OR ? BETWEEN start_date AND end_date)
+    """;
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -49,7 +46,7 @@ public class BookingDAO {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1) == 0; // available if no overlaps
+                return rs.getInt(1) == 0; // ✅ available if no overlaps
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -113,39 +110,20 @@ public class BookingDAO {
         return false;
     }
 
-    /* -----------------------------------------------------------
-       ✅ Get renter bookings with property info
-       ----------------------------------------------------------- */
     public List<Booking> getBookingsByRenter(int renterId) {
         List<Booking> list = new ArrayList<>();
-        String sql = "SELECT b.*, l.name AS listing_name, l.location, l.price " +
-                "FROM bookings b " +
-                "JOIN listings l ON b.listing_id = l.id " +
-                "WHERE b.renter_id = ? ORDER BY b.created_at DESC";
-
+        String sql = "SELECT * FROM bookings WHERE renter_id = ? ORDER BY created_at DESC";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, renterId);
             ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Booking b = extractBooking(rs);
-                b.setListingName(rs.getString("listing_name"));
-                b.setLocation(rs.getString("location"));
-                b.setPrice(rs.getDouble("price"));
-                list.add(b);
-            }
-
+            while (rs.next()) list.add(extractBooking(rs));
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
 
-    /* -----------------------------------------------------------
-       🔹 Get bookings by owner
-       ----------------------------------------------------------- */
     public List<Booking> getBookingsByOwner(int ownerId) {
         List<Booking> list = new ArrayList<>();
         String sql = "SELECT * FROM bookings WHERE owner_id = ? ORDER BY created_at DESC";
@@ -160,9 +138,6 @@ public class BookingDAO {
         return list;
     }
 
-    /* -----------------------------------------------------------
-       🔹 Extract core booking info
-       ----------------------------------------------------------- */
     private Booking extractBooking(ResultSet rs) throws SQLException {
         Booking b = new Booking();
         b.setId(rs.getInt("id"));
@@ -176,10 +151,6 @@ public class BookingDAO {
         b.setCreatedAt(rs.getTimestamp("created_at"));
         return b;
     }
-
-    /* -----------------------------------------------------------
-       🔹 Cancel booking (by renter)
-       ----------------------------------------------------------- */
     public boolean cancelBooking(int bookingId) {
         String sql = "UPDATE bookings SET status = 'CANCELLED_BY_RENTER' WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -191,4 +162,6 @@ public class BookingDAO {
             return false;
         }
     }
+
+
 }

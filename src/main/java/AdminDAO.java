@@ -101,17 +101,6 @@ public class AdminDAO {
         return updateUserStatus(userId, "ACTIVE");
     }
 
-    private void logAdminAction(int adminId, String type, int targetId, String details) {
-        String sql = "INSERT INTO admin_actions (admin_id, action_type, target_id, details) VALUES (?,?,?,?)";
-        try (var conn = DBUtil.getConnection(); var ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, adminId);
-            ps.setString(2, type);
-            ps.setInt(3, targetId);
-            ps.setString(4, details);
-            ps.executeUpdate();
-        } catch (Exception e) { e.printStackTrace(); }
-    }
-
     private boolean updateUserStatus(int userId, String status) {
         String sql = "UPDATE users SET status = ? WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();

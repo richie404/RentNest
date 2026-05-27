@@ -1,20 +1,15 @@
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.Set;
-
 public class RenterBookingsController {
 
     @FXML private TableView<Booking> bookingTable;
     @FXML private TableColumn<Booking, Integer> colBookingId;
-    @FXML private TableColumn<Booking, Integer> colListing;
+    @FXML private TableColumn<Booking, Integer> colProperty;
     @FXML private TableColumn<Booking, Integer> colOwner;
-    @FXML private TableColumn<Booking, String> colProperty;
-    @FXML private TableColumn<Booking, String> colLocation;
     @FXML private TableColumn<Booking, java.sql.Date> colStart;
     @FXML private TableColumn<Booking, java.sql.Date> colEnd;
     @FXML private TableColumn<Booking, Double> colAmount;
@@ -26,43 +21,41 @@ public class RenterBookingsController {
     private final BookingDAO bookingDAO = new BookingDAO();
     private int renterId;
 
+    /* -----------------------------------------------------------
+       🔹 Initialization
+       ----------------------------------------------------------- */
     @FXML
     private void initialize() {
+        // Map table columns to Booking fields
         colBookingId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colListing.setCellValueFactory(new PropertyValueFactory<>("listingId"));
+        colProperty.setCellValueFactory(new PropertyValueFactory<>("propertyId"));
         colOwner.setCellValueFactory(new PropertyValueFactory<>("ownerId"));
-        colProperty.setCellValueFactory(new PropertyValueFactory<>("listingName"));
-        colLocation.setCellValueFactory(new PropertyValueFactory<>("location"));
         colStart.setCellValueFactory(new PropertyValueFactory<>("startDate"));
         colEnd.setCellValueFactory(new PropertyValueFactory<>("endDate"));
         colAmount.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // UX: enable Cancel only for cancellable states
-        if (btnCancel != null) {
-            btnCancel.disableProperty().bind(
-                    Bindings.createBooleanBinding(() -> {
-                        Booking b = bookingTable.getSelectionModel().getSelectedItem();
-                        if (b == null) return true;
-                        String s = b.getStatus() == null ? "" : b.getStatus().toUpperCase();
-                        Set<String> cancellable = Set.of(
-                                "PENDING_OWNER_APPROVAL", "PENDING", "APPROVED"
-                        );
-                        return !cancellable.contains(s);
-                    }, bookingTable.getSelectionModel().selectedItemProperty())
-            );
+        // Load for logged-in renter if available
+        int currentUser = UserStore.getCurrentUserId();
+        if (currentUser != -1) {
+            setRenterId(currentUser); // ✅ automatically triggers load
         }
     }
 
+    /* -----------------------------------------------------------
+       🔹 Setter - Called from Router after login
+       ----------------------------------------------------------- */
     public void setRenterId(int renterId) {
         this.renterId = renterId;
-        System.out.println("✅ [RenterBookingsController] renterId set: " + renterId);
-        loadBookings();
+        loadBookings(); // ✅ refresh data immediately
     }
 
+    /* -----------------------------------------------------------
+       🔹 Load all bookings for this renter
+       ----------------------------------------------------------- */
     private void loadBookings() {
         if (renterId <= 0) {
-            System.out.println("⚠️ No renterId set — skipping load.");
+            showAlert("Error", "No renter logged in.");
             return;
         }
 
@@ -70,13 +63,15 @@ public class RenterBookingsController {
             ObservableList<Booking> bookings =
                     FXCollections.observableArrayList(bookingDAO.getBookingsByRenter(renterId));
             bookingTable.setItems(bookings);
-            System.out.println("✅ Loaded " + bookings.size() + " bookings for renter " + renterId);
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Unable to load bookings: " + e.getMessage());
         }
     }
 
+    /* -----------------------------------------------------------
+       🔹 Handle Booking Cancellation
+       ----------------------------------------------------------- */
     @FXML
     private void handleCancel() {
         Booking selected = bookingTable.getSelectionModel().getSelectedItem();
@@ -85,12 +80,13 @@ public class RenterBookingsController {
             return;
         }
 
-        String status = selected.getStatus() == null ? "" : selected.getStatus().toUpperCase();
-        if ("CANCELLED_BY_RENTER".equals(status)) {
+        String status = selected.getStatus();
+        if ("CANCELLED_BY_RENTER".equalsIgnoreCase(status)) {
             showAlert("Info", "You already cancelled this booking.");
             return;
         }
-        if ("CONFIRMED".equals(status)) {
+
+        if ("CONFIRMED".equalsIgnoreCase(status)) {
             showAlert("Info", "Confirmed bookings cannot be cancelled directly.");
             return;
         }
@@ -98,17 +94,23 @@ public class RenterBookingsController {
         boolean success = bookingDAO.cancelBooking(selected.getId());
         if (success) {
             showAlert("Cancelled", "Your booking has been cancelled successfully.");
-            loadBookings();
+            loadBookings(); // ✅ refresh table
         } else {
             showAlert("Error", "Failed to cancel booking.");
         }
     }
 
+    /* -----------------------------------------------------------
+       🔹 Manual Refresh Button
+       ----------------------------------------------------------- */
     @FXML
     private void handleRefresh() {
         loadBookings();
     }
 
+    /* -----------------------------------------------------------
+       🔹 Alert helper
+       ----------------------------------------------------------- */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

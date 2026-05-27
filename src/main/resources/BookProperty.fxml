@@ -15,6 +15,9 @@
         <HBox styleClass="header" spacing="20">
             <Label text="🏠 Confirm Your Booking" styleClass="label-title"/>
             <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="⬅ Back"
+                    onAction="#handleBackToProperty"
+                    styleClass="button-secondary"/>
         </HBox>
     </top>
 
@@ -64,6 +67,7 @@
                         <VBox styleClass="form-section">
                             <Label text="Start Date" styleClass="field-label"/>
                             <HBox spacing="10" alignment="CENTER_LEFT">
+                                <!-- 🗓️ Unicode Calendar Icon -->
                                 <Label text="🗓️"
                                        style="-fx-font-size: 22px; -fx-text-fill: #591734; -fx-cursor: hand;"/>
 

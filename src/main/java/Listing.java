@@ -1,5 +1,3 @@
-import javafx.stage.Stage;
-
 public class Listing {
     private int id;
     private String title;

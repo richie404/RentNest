@@ -118,11 +118,16 @@ public class Router {
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/RenterBookings.fxml"));
             Parent root = loader.load();
-            Object c = loader.getController();
-            if (c instanceof RenterBookingsController rbc) rbc.setRenterId(renterId);
+
+            Object controller = loader.getController();
+            if (controller instanceof RenterBookingsController rbc) {
+                rbc.setRenterId(renterId);
+            }
+
             showScene(root, "My Bookings");
         } catch (IOException e) {
-            throw new RuntimeException("Failed to open Renter Bookings", e);
+            e.printStackTrace();
+            System.err.println("❌ Failed to open RenterBookings.fxml");
         }
     }
 

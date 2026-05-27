@@ -4,7 +4,9 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Handles all user-related database operations.
+ */
 public class UserDAO {
 
     // Check if an email already exists in the users table

@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.ListCell;
 import javafx.stage.Stage;
-
 import java.util.List;
 
 public class RenterDashboardController extends BaseController {
@@ -14,15 +13,15 @@ public class RenterDashboardController extends BaseController {
     @FXML private ListView<Listing> favoritesList;
     @FXML private ListView<Message> messageList;
     @FXML private Button viewChatButton;
-
-    // 🔑 JavaFX will inject the included controller:
-    // <fx:include source="RenterBookings.fxml" fx:id="renterBookingsTab"/>
-    @FXML private RenterBookingsController renterBookingsTabController;
+    @FXML private RenterBookingsController renterBookingsController;
 
     private final ListingDAO listingDAO = new ListingDAO();
     private final MessageDAO messageDAO = new MessageDAO();
     private int renterId;
 
+    /* -----------------------------------------------------------
+       🏠 Initialize dashboard
+       ----------------------------------------------------------- */
     @FXML
     public void initialize() {
         if (!requireRole("RENTER")) return;
@@ -32,54 +31,50 @@ public class RenterDashboardController extends BaseController {
             renterId = user.getId();
         }
 
-        // Favorites list
+        // Initialize lists, buttons, etc.
         favoritesList.setCellFactory(v -> new ListCell<>() {
             @Override
             protected void updateItem(Listing l, boolean empty) {
                 super.updateItem(l, empty);
-                setText((empty || l == null) ? null :
-                        l.getTitle() + " — ৳" + l.getPricePerMonth() + " | " + l.getLocation());
+                setText((empty || l == null) ? null : l.getTitle() + " — ৳" + l.getPricePerMonth() + " | " + l.getLocation());
             }
         });
 
-        // Messages list
         messageList.setCellFactory(v -> new ListCell<>() {
             @Override
             protected void updateItem(Message m, boolean empty) {
                 super.updateItem(m, empty);
                 setText((empty || m == null) ? null :
-                        "From Owner ID: " + m.getSenderId() +
+                        "💬 From Owner ID: " + m.getSenderId() +
                                 " | Listing ID: " + m.getListingId() +
                                 "\n" + m.getMessageText());
             }
         });
 
-        if (viewChatButton != null) {
-            viewChatButton.disableProperty().bind(
-                    messageList.getSelectionModel().selectedItemProperty().isNull()
-            );
-        }
-
-        // 🔗 pass renterId into the included bookings controller
-        if (renterBookingsTabController != null && renterId > 0) {
-            renterBookingsTabController.setRenterId(renterId);
-        }
-
-        loadFeatured();
-        loadMessages();
+        if (viewChatButton != null)
+            viewChatButton.disableProperty().bind(messageList.getSelectionModel().selectedItemProperty().isNull());
     }
 
-    // Called by Router when navigating here with a renter id
+
     public void setRenterId(int renterId) {
         this.renterId = renterId;
+        System.out.println("✅ [RenterDashboardController] Renter ID set: " + renterId);
+
+        // Forward to included bookings tab
+        if (renterBookingsController != null) {
+            renterBookingsController.setRenterId(renterId);
+            System.out.println("📤 Forwarded renterId to RenterBookingsController");
+        } else {
+            System.err.println("⚠️ RenterBookingsController is null — check fx:include fx:id");
+        }
+
         loadFeatured();
         loadMessages();
-
-        if (renterBookingsTabController != null && renterId > 0) {
-            renterBookingsTabController.setRenterId(renterId);
-        }
     }
 
+    /* -----------------------------------------------------------
+       🌟 Load featured listings
+       ----------------------------------------------------------- */
     private void loadFeatured() {
         try {
             List<Listing> featured = listingDAO.findFeatured(6);
@@ -89,6 +84,9 @@ public class RenterDashboardController extends BaseController {
         }
     }
 
+    /* -----------------------------------------------------------
+       💬 Load messages for renter (sent or received)
+       ----------------------------------------------------------- */
     private void loadMessages() {
         try {
             List<Message> msgs = messageDAO.getMessagesForUser(renterId);
@@ -98,20 +96,34 @@ public class RenterDashboardController extends BaseController {
         }
     }
 
+    /* -----------------------------------------------------------
+       💬 Open chat window (bidirectional + safe)
+       ----------------------------------------------------------- */
     @FXML
     private void handleViewChat() {
         Message selected = messageList.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("No Message Selected", "Please select a message to open chat.");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Message Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a message to open chat.");
+            alert.showAndWait();
             return;
         }
 
         try {
             int listingId = selected.getListingId();
+            int ownerId;
             int renterId = this.renterId;
-            int ownerId = (selected.getSenderId() == renterId)
-                    ? selected.getReceiverId()
-                    : selected.getSenderId();
+
+            // ✅ Determine who is owner based on message direction
+            if (selected.getSenderId() == renterId) {
+                // renter sent this → owner is receiver
+                ownerId = selected.getReceiverId();
+            } else {
+                // renter received this → owner is sender
+                ownerId = selected.getSenderId();
+            }
 
             String title = "Listing #" + listingId;
 
@@ -119,6 +131,7 @@ public class RenterDashboardController extends BaseController {
             Parent root = loader.load();
 
             ChatWindowController controller = loader.getController();
+            // ✅ renter is always sender (current user)
             controller.initChat(listingId, renterId, ownerId, title);
 
             Stage stage = new Stage();
@@ -132,30 +145,40 @@ public class RenterDashboardController extends BaseController {
         }
     }
 
+    /* -----------------------------------------------------------
+       🔄 Refresh / Reload
+       ----------------------------------------------------------- */
     @FXML
     private void handleRefresh() {
         loadFeatured();
         loadMessages();
-        if (renterBookingsTabController != null && renterId > 0) {
-            renterBookingsTabController.setRenterId(renterId); // ensures bookings reload
+    }
+    @FXML
+    private void handleMyBookings() {
+        int renterId = UserStore.getCurrentUserId(); // ✅ use your UserStore
+        if (renterId == -1) {
+            System.out.println("⚠️ No renter logged in");
+            return;
         }
+        Router.goToRenterBookings(renterId);
     }
 
-    @FXML private void handleBrowse() { Router.goToBrowse(); }
-    @FXML private void handleHome() { Router.goToHomepage(); }
+    /* -----------------------------------------------------------
+       🔗 Navigation
+       ----------------------------------------------------------- */
+    @FXML
+    private void handleBrowse() {
+        Router.goToBrowse();
+    }
+
+    @FXML
+    private void handleHome() {
+        Router.goToHomepage();
+    }
 
     @FXML
     private void handleLogout() {
         SessionManager.logout();
-        UserStore.clear();
         Router.goToHomepage();
-    }
-
-    private void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
     }
 }

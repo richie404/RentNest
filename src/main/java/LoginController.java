@@ -1,8 +1,8 @@
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.util.Pair;
 import java.util.Optional;
+import javafx.util.Pair;
 
 public class LoginController {
 
@@ -14,12 +14,9 @@ public class LoginController {
 
     private final UserDAO userDAO = new UserDAO();
 
-    /* -----------------------------------------------------------
-       ✅ Normal Login (Main Entry Point)
-       ----------------------------------------------------------- */
+    // ✅ Normal Login
     @FXML
     private void handleSubmitLogin() {
-
         String email = emailField.getText().trim();
         String pass = passwordField.getText().trim();
 
@@ -42,13 +39,8 @@ public class LoginController {
 
             User user = u.get();
 
-            // ✅ Save the logged-in user globally
+            // ✅ Save the logged-in user globally (using SessionManager)
             SessionManager.setLoggedInUser(user);
-
-            // ✅ Also store ID for RenterBookingsController / other dashboards
-            UserStore.setCurrentUserId(user.getId()); // 👈 This was missing before!
-
-            System.out.println("✅ Logged in as: " + user.getEmail() + " (ID: " + user.getId() + ")");
 
             // ✅ Route based on role
             if (user.getRoles().contains("OWNER")) {
@@ -66,17 +58,13 @@ public class LoginController {
         }
     }
 
-    /* -----------------------------------------------------------
-       🔗 Register Link
-       ----------------------------------------------------------- */
+    // ✅ Register link
     @FXML
     private void handleGoRegister() {
         Router.goToRegister();
     }
 
-    /* -----------------------------------------------------------
-       🔐 Admin Login Popup
-       ----------------------------------------------------------- */
+    // ✅ Admin Login Popup
     @FXML
     private void handleAdminLogin() {
         Dialog<Pair<String, String>> dialog = new Dialog<>();
@@ -133,9 +121,8 @@ public class LoginController {
                 if (userOpt.isPresent() && userOpt.get().getRoles().contains("ADMIN")) {
                     User admin = userOpt.get();
 
-                    // ✅ Store admin session globally
+                    // ✅ Store admin session using SessionManager
                     SessionManager.setLoggedInUser(admin);
-                    UserStore.setCurrentUserId(admin.getId()); // optional consistency
 
                     Router.goToAdminDashboard();
                 } else {
@@ -147,17 +134,6 @@ public class LoginController {
         });
     }
 
-    /* -----------------------------------------------------------
-       🏠 Back to Homepage
-       ----------------------------------------------------------- */
-    @FXML
-    private void handleBackToHome() {
-        Router.goToHomepage();
-    }
-
-    /* -----------------------------------------------------------
-       ⚙️ Alert Helper
-       ----------------------------------------------------------- */
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -165,4 +141,9 @@ public class LoginController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+    @FXML
+    private void handleBackToHome() {
+        Router.goToHomepage();
+    }
+
 }

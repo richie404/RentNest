@@ -6,17 +6,17 @@
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="AdminUserManagementController"
       spacing="12"
-      stylesheets="@shared.css">
+      stylesheets="@admin-shared.css">
 
     <!-- ✅ Correct padding syntax -->
     <padding>
         <Insets top="15" right="15" bottom="15" left="15"/>
     </padding>
 
-    <Label text="👤 Registered Users"
+    <Label text="Registered Users"
            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
-    <TableView fx:id="userTable" styleClass="table-view" VBox.vgrow="ALWAYS">
+    <TableView fx:id="userTable" prefHeight="400">
         <columns>
             <TableColumn fx:id="colId" text="User ID" prefWidth="180"/>
             <TableColumn fx:id="colName" text="Name" prefWidth="180"/>

@@ -17,7 +17,6 @@ public class PropertyDetailsController extends BaseController {
     @FXML private TextArea descriptionArea;
 
     private int listingId;
-    private Listing currentListing;
     private final ListingDAO listingDAO = new ListingDAO();
 
     /* -----------------------------------------------------------
@@ -38,7 +37,6 @@ public class PropertyDetailsController extends BaseController {
             }
 
             Listing l = opt.get();
-            this.currentListing = l;
 
             titleLabel.setText(l.getTitle());
             locationLabel.setText(l.getLocation());

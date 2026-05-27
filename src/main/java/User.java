@@ -8,6 +8,7 @@ public class User {
 
     public User() {}
 
+    // ✅ Original constructor
     public User(int id, String name, String email, String roles) {
         this.id = id;
         this.name = name;
@@ -16,7 +17,7 @@ public class User {
         this.active = true;
     }
 
-
+    // ✅ New constructor (matches what UserDAO calls)
     public User(int id, String name, String email, boolean active, String roles) {
         this.id = id;
         this.name = name;

@@ -1,47 +1,27 @@
+// No package declaration at the top
+
 public class UserStore {
 
-    private static User currentUser;   // Holds the logged-in user
-    private static int currentUserId = -1; // ✅ Added: store ID separately (for convenience)
+    private static User currentUser;  // holds the logged-in user
 
-    /* -----------------------------------------------------------
-       ✅ Save full user object
-       ----------------------------------------------------------- */
+    // ✅ Save the logged-in user
     public static void setCurrentUser(User user) {
         currentUser = user;
-        if (user != null) {
-            currentUserId = user.getId(); // Keep ID synced
-        }
     }
 
-    /* -----------------------------------------------------------
-       ✅ Save only the user ID (if you don’t have User object yet)
-       ----------------------------------------------------------- */
-    public static void setCurrentUserId(int id) {
-        currentUserId = id;
-    }
-
-    /* -----------------------------------------------------------
-       ✅ Get the full user object
-       ----------------------------------------------------------- */
+    // ✅ Get the full User object
     public static User getCurrentUser() {
         return currentUser;
     }
 
-    /* -----------------------------------------------------------
-       ✅ Get only the user ID (for quick lookup)
-       ----------------------------------------------------------- */
+    // ✅ Get only the user ID
     public static int getCurrentUserId() {
-        if (currentUser != null) {
-            return currentUser.getId();
-        }
-        return currentUserId;
+        return currentUser != null ? currentUser.getId() : -1;
     }
 
-    /* -----------------------------------------------------------
-       ✅ Clear stored data (on logout)
-       ----------------------------------------------------------- */
+    // ✅ Clear the saved user (e.g., on logout)
     public static void clear() {
         currentUser = null;
-        currentUserId = -1;
     }
 }
+
