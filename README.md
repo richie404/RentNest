@@ -28,7 +28,29 @@ Steps:
 2. Update `db.user` and `db.password` in `src/main/resources/db.properties` as needed.
 3. Make sure the configured user has access to the database.
 
-> Note: This repository does not include a SQL schema script. If you need the schema, inspect the DAO classes or recreate the tables based on the application data model.
+4. Optionally import `rentnest.sql` to create the schema and seed sample data.
+
+```bash
+mysql -u root -p rentnest < rentnest.sql
+```
+
+> Note: `rentnest.sql` is now included in the repository and contains the database schema, constraints, and example seed data.
+
+## Database Schema
+
+The included `rentnest.sql` file creates the full database structure for the application, including:
+
+- `users` — app users with roles (`RENTER`, `OWNER`, `ADMIN`)
+- `listings` — rental properties and approval status
+- `bookings` — reservation records with status tracking
+- `favorites` — saved listings for users
+- `messages` — stored chat messages between users
+- `socket_messages` — socket chat history support
+- `listing_photos` — listing image URLs
+- `inquiries` — renter inquiries about listings
+- `payments` — payment transaction records
+
+If you change the schema or seed data, re-import the file into your local `rentnest` database and restart the app.
 
 ## Build and Run
 
@@ -55,6 +77,7 @@ This launches the JavaFX application using the Maven JavaFX plugin.
 - `src/main/java/DBConfig.java` — loads database connection properties
 - `src/main/java/DatabaseConnection.java` — provides shared JDBC connection handling
 - `src/main/resources/db.properties` — database connection configuration
+- `rentnest.sql` — database schema and sample data dump
 - `src/main/resources/*.fxml` — JavaFX screens
 - `src/main/resources/*.css` — application styles
 
