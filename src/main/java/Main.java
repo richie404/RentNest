@@ -7,10 +7,10 @@ public class Main extends Application {
     public void start(Stage stage) {
         Router.setStage(stage);
         stage.setTitle("RentNest");
+        stage.setWidth(950);
+        stage.setHeight(700);
+        stage.setResizable(false);
         Router.goToIndex();  // ✅ Opens homepage.fxml on launch
-        stage.setResizable(true);
-        stage.setMaximized(true);
-
     }
 
     public static void main(String[] args) {

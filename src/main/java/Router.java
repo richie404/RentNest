@@ -270,8 +270,6 @@ public class Router {
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setTitle(title);
-        stage.setWidth(950);
-        stage.setHeight(700);
         stage.centerOnScreen();
         stage.show();
 
