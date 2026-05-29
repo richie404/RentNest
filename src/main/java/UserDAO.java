@@ -83,14 +83,15 @@ public class UserDAO {
 
     // Validate login credentials
     public boolean checkCredentials(String email, String password) throws Exception {
-        String sql = "SELECT password_hash FROM users WHERE email = ?";
+        String sql = "SELECT password_hash, active FROM users WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String storedHash = rs.getString("password_hash");
-                    return storedHash.equals(hashPassword(password));
+                    boolean active = rs.getBoolean("active");
+                    return active && storedHash.equals(hashPassword(password));
                 }
             }
         }
@@ -99,7 +100,7 @@ public class UserDAO {
 
     // Retrieve user by email
     public Optional<User> findByEmail(String email) throws Exception {
-        String sql = "SELECT id, username, email, role FROM users WHERE email = ?";
+        String sql = "SELECT id, username, email, role, active FROM users WHERE email = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
@@ -109,7 +110,7 @@ public class UserDAO {
                             rs.getInt("id"),
                             rs.getString("username"),
                             rs.getString("email"),
-                            true, // active = true (you can add a DB column later)
+                            rs.getBoolean("active"),
                             rs.getString("role")
                     );
                     return Optional.of(user);

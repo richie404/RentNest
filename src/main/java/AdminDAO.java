@@ -68,7 +68,7 @@ public class AdminDAO {
        ----------------------------------------------------------- */
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT id, username AS name, email, role AS roles, status AS active FROM users";
+        String sql = "SELECT id, username AS name, email, role AS roles, active FROM users";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -80,8 +80,7 @@ public class AdminDAO {
                 u.setName(rs.getString("name"));
                 u.setEmail(rs.getString("email"));
                 u.setRoles(rs.getString("roles"));
-                String status = rs.getString("active");
-                u.setActive(status == null || !status.equalsIgnoreCase("BANNED"));
+                u.setActive(rs.getBoolean("active"));
                 users.add(u);
             }
         } catch (SQLException e) {
@@ -94,19 +93,21 @@ public class AdminDAO {
        🔹 USER MANAGEMENT (Ban / Unban / Delete / Role)
        ----------------------------------------------------------- */
     public boolean banUser(int userId) {
-        return updateUserStatus(userId, "BANNED");
+        return updateUserStatus(userId, false);
     }
 
     public boolean unbanUser(int userId) {
-        return updateUserStatus(userId, "ACTIVE");
+        return updateUserStatus(userId, true);
     }
 
-    private boolean updateUserStatus(int userId, String status) {
-        String sql = "UPDATE users SET status = ? WHERE id = ?";
+    private boolean updateUserStatus(int userId, boolean active) {
+        String status = active ? "ACTIVE" : "BANNED";
+        String sql = "UPDATE users SET active = ?, status = ? WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, status);
-            stmt.setInt(2, userId);
+            stmt.setBoolean(1, active);
+            stmt.setString(2, status);
+            stmt.setInt(3, userId);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

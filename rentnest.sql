@@ -282,6 +282,26 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `create
 (12, 'khala', 'khala@mail.com', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'RENTER', '2025-10-23 21:16:22', 'ACTIVE', 1),
 (13, 'mama', 'mama@mail.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'RENTER', '2025-10-24 13:21:11', 'ACTIVE', 1);
 
+-- --------------------------------------------------------
+--
+-- Table structure for table `admin_actions`
+--
+
+CREATE TABLE `admin_actions` (
+  `id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `action_type` varchar(100) NOT NULL,
+  `target_id` int(11) NOT NULL,
+  `details` text,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+
+--
+-- Dumping data for table `admin_actions`
+--
+
+-- No seed data for admin actions
+
 --
 -- Indexes for dumped tables
 --
@@ -358,6 +378,13 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Indexes for table `admin_actions`
+--
+ALTER TABLE `admin_actions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `admin_id` (`admin_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -414,6 +441,12 @@ ALTER TABLE `socket_messages`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `admin_actions`
+--
+ALTER TABLE `admin_actions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -474,6 +507,12 @@ ALTER TABLE `socket_messages`
   ADD CONSTRAINT `fk_socket_listing` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_socket_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_socket_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `admin_actions`
+--
+ALTER TABLE `admin_actions`
+  ADD CONSTRAINT `admin_actions_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
