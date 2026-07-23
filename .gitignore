@@ -1,9 +1,20 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.env
+**/.env
+.env.local
+coverage/
+**/coverage/
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
+.idea/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -34,5 +45,6 @@ build/
 ### VS Code ###
 .vscode/
 
-### Mac OS ###
+### Mac OS & Windows ###
 .DS_Store
+Thumbs.db
