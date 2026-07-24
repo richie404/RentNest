@@ -12,6 +12,7 @@ import { globalRateLimiter } from "./middleware/rate-limiter.middleware";
 import { globalErrorHandler } from "./middleware/error.middleware";
 import { NotFoundError } from "./utils/app-error";
 import apiV1Router from "./routes";
+import { swaggerUiHtmlHandler } from "./routes/docs.routes";
 
 export const createApp = (): Application => {
   const app: Application = express();
@@ -20,7 +21,9 @@ export const createApp = (): Application => {
   app.set("trust proxy", 1);
 
   // Security HTTP Headers
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: false, // Allow Swagger UI inline scripts & CDN stylesheets
+  }));
 
   // CORS Setup
   app.use(cors(corsOptions));
@@ -44,6 +47,10 @@ export const createApp = (): Application => {
 
   // Serve Uploaded Files
   app.use("/uploads", express.static(path.resolve(process.cwd(), env.UPLOAD_PATH)));
+
+  // Interactive Swagger UI Web Documentation
+  app.get("/api/docs", swaggerUiHtmlHandler);
+  app.get("/docs", swaggerUiHtmlHandler);
 
   // Mount API v1 Master Router
   app.use(env.API_PREFIX, apiV1Router);

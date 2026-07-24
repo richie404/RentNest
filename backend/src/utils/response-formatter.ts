@@ -53,6 +53,7 @@ export class ApiResponse {
         code,
         message,
         details,
+        timestamp: new Date().toISOString(),
       },
     };
     return res.status(statusCode).json(payload);

@@ -36,7 +36,7 @@ export class LeaseController {
   };
 
   public updateApplicationStatus = async (req: Request, res: Response): Promise<Response> => {
-    const applicationId = parseInt(req.params.id, 10);
+    const applicationId = parseInt(req.params.id as string, 10);
     const requestorUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -53,7 +53,7 @@ export class LeaseController {
   };
 
   public getApplicationById = async (req: Request, res: Response): Promise<Response> => {
-    const applicationId = parseInt(req.params.id, 10);
+    const applicationId = parseInt(req.params.id as string, 10);
     const application = await this.leaseService.getApplicationById(applicationId);
     return ApiResponse.success(res, application, "Rental application retrieved successfully.");
   };
@@ -66,7 +66,7 @@ export class LeaseController {
   };
 
   public getLeaseById = async (req: Request, res: Response): Promise<Response> => {
-    const leaseId = parseInt(req.params.id, 10);
+    const leaseId = parseInt(req.params.id as string, 10);
     const lease = await this.leaseService.getLeaseById(leaseId);
     return ApiResponse.success(res, lease, "Lease details retrieved successfully.");
   };
@@ -78,7 +78,7 @@ export class LeaseController {
   };
 
   public signLease = async (req: Request, res: Response): Promise<Response> => {
-    const leaseId = parseInt(req.params.id, 10);
+    const leaseId = parseInt(req.params.id as string, 10);
     const userId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -94,7 +94,7 @@ export class LeaseController {
   };
 
   public terminateLease = async (req: Request, res: Response): Promise<Response> => {
-    const leaseId = parseInt(req.params.id, 10);
+    const leaseId = parseInt(req.params.id as string, 10);
     const requestorUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;

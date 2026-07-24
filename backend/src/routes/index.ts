@@ -1,5 +1,6 @@
 import { Router } from "express";
 import healthRoutes from "./health.routes";
+import docsRoutes from "./docs.routes";
 import authRoutes from "../modules/auth/auth.routes";
 import userRoutes from "../modules/users/user.routes";
 import rbacRoutes from "../modules/rbac/rbac.routes";
@@ -17,6 +18,9 @@ const apiV1Router = Router();
 
 // Infrastructure Health Endpoint
 apiV1Router.use("/health", healthRoutes);
+
+// OpenAPI Docs Specification Endpoint
+apiV1Router.use("/docs", docsRoutes);
 
 // Sprint 1: Authentication Module
 apiV1Router.use("/auth", authRoutes);

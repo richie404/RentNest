@@ -11,16 +11,17 @@ export class UserController {
   };
 
   public getUserById = async (req: Request, res: Response): Promise<Response> => {
-    const userId = parseInt(req.params.id, 10);
+    const userId = parseInt(req.params.id as string, 10);
     const user = await this.userService.getUserById(userId);
     return ApiResponse.success(res, user, "User record retrieved successfully.");
   };
 
   public updateProfile = async (req: Request, res: Response): Promise<Response> => {
-    const targetUserId = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const targetUserId = parseInt(paramId, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
-    const userAgent = req.headers["user-agent"];
+    const userAgent = Array.isArray(req.headers["user-agent"]) ? req.headers["user-agent"][0] : req.headers["user-agent"];
     const ipAddress = req.ip;
 
     const updatedUser = await this.userService.updateProfile(
@@ -36,9 +37,10 @@ export class UserController {
   };
 
   public updateStatus = async (req: Request, res: Response): Promise<Response> => {
-    const targetUserId = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const targetUserId = parseInt(paramId, 10);
     const adminUserId = req.user!.userId;
-    const userAgent = req.headers["user-agent"];
+    const userAgent = Array.isArray(req.headers["user-agent"]) ? req.headers["user-agent"][0] : req.headers["user-agent"];
     const ipAddress = req.ip;
 
     const updatedUser = await this.userService.updateStatus(
@@ -53,9 +55,10 @@ export class UserController {
   };
 
   public adminResetPassword = async (req: Request, res: Response): Promise<Response> => {
-    const targetUserId = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const targetUserId = parseInt(paramId, 10);
     const adminUserId = req.user!.userId;
-    const userAgent = req.headers["user-agent"];
+    const userAgent = Array.isArray(req.headers["user-agent"]) ? req.headers["user-agent"][0] : req.headers["user-agent"];
     const ipAddress = req.ip;
 
     await this.userService.adminResetPassword(
@@ -70,9 +73,10 @@ export class UserController {
   };
 
   public adminForceLogout = async (req: Request, res: Response): Promise<Response> => {
-    const targetUserId = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const targetUserId = parseInt(paramId, 10);
     const adminUserId = req.user!.userId;
-    const userAgent = req.headers["user-agent"];
+    const userAgent = Array.isArray(req.headers["user-agent"]) ? req.headers["user-agent"][0] : req.headers["user-agent"];
     const ipAddress = req.ip;
 
     await this.userService.adminForceLogout(
@@ -86,7 +90,8 @@ export class UserController {
   };
 
   public getAuditHistory = async (req: Request, res: Response): Promise<Response> => {
-    const targetUserId = parseInt(req.params.id, 10);
+    const paramId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const targetUserId = parseInt(paramId, 10);
     const logs = await this.userService.getUserAuditHistory(targetUserId);
     return ApiResponse.success(res, logs, "User audit log history retrieved successfully.");
   };

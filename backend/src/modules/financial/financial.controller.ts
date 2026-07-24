@@ -36,7 +36,7 @@ export class FinancialController {
   };
 
   public getInvoiceById = async (req: Request, res: Response): Promise<Response> => {
-    const invoiceId = parseInt(req.params.id, 10);
+    const invoiceId = parseInt(req.params.id as string, 10);
     const invoice = await this.financialService.getInvoiceById(invoiceId);
     return ApiResponse.success(res, invoice, "Invoice details retrieved successfully.");
   };

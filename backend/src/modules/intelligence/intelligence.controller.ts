@@ -24,7 +24,7 @@ export class IntelligenceController {
   };
 
   public getFraudRiskFlags = async (req: Request, res: Response): Promise<Response> => {
-    const applicationId = parseInt(req.params.id, 10);
+    const applicationId = parseInt(req.params.id as string, 10);
     const flags = await this.intelligenceService.getFraudRiskFlags(applicationId);
     return ApiResponse.success(res, flags, "Fraud risk assessment retrieved successfully.");
   };

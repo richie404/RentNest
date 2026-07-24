@@ -36,7 +36,7 @@ export class CommunicationController {
   };
 
   public listMessages = async (req: Request, res: Response): Promise<Response> => {
-    const conversationId = parseInt(req.params.id, 10);
+    const conversationId = parseInt(req.params.id as string, 10);
     const messages = await this.communicationService.listMessages(conversationId);
     return ApiResponse.success(res, messages, "Conversation messages retrieved successfully.");
   };

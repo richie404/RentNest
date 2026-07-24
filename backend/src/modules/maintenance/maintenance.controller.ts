@@ -21,7 +21,7 @@ export class MaintenanceController {
   };
 
   public assignVendor = async (req: Request, res: Response): Promise<Response> => {
-    const requestId = parseInt(req.params.id, 10);
+    const requestId = parseInt(req.params.id as string, 10);
     const managerUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -38,7 +38,7 @@ export class MaintenanceController {
   };
 
   public updateStatus = async (req: Request, res: Response): Promise<Response> => {
-    const requestId = parseInt(req.params.id, 10);
+    const requestId = parseInt(req.params.id as string, 10);
     const userId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -55,7 +55,7 @@ export class MaintenanceController {
   };
 
   public getRequestById = async (req: Request, res: Response): Promise<Response> => {
-    const requestId = parseInt(req.params.id, 10);
+    const requestId = parseInt(req.params.id as string, 10);
     const request = await this.maintenanceService.getRequestById(requestId);
     return ApiResponse.success(res, request, "Maintenance ticket retrieved successfully.");
   };

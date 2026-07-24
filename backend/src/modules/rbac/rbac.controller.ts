@@ -11,7 +11,7 @@ export class RbacController {
   };
 
   public getRoleById = async (req: Request, res: Response): Promise<Response> => {
-    const roleId = parseInt(req.params.roleId, 10);
+    const roleId = parseInt(req.params.roleId as string, 10);
     const role = await this.rbacService.getRoleById(roleId);
     return ApiResponse.success(res, role, "Role details retrieved successfully.");
   };
@@ -22,7 +22,7 @@ export class RbacController {
   };
 
   public assignRoleToUser = async (req: Request, res: Response): Promise<Response> => {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(req.params.userId as string, 10);
     const { roleId } = req.body;
     const adminUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
@@ -33,8 +33,8 @@ export class RbacController {
   };
 
   public revokeRoleFromUser = async (req: Request, res: Response): Promise<Response> => {
-    const userId = parseInt(req.params.userId, 10);
-    const roleId = parseInt(req.params.roleId, 10);
+    const userId = parseInt(req.params.userId as string, 10);
+    const roleId = parseInt(req.params.roleId as string, 10);
     const adminUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -44,7 +44,7 @@ export class RbacController {
   };
 
   public assignPermissionsToRole = async (req: Request, res: Response): Promise<Response> => {
-    const roleId = parseInt(req.params.roleId, 10);
+    const roleId = parseInt(req.params.roleId as string, 10);
     const { permissionIds } = req.body;
     const adminUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
@@ -61,8 +61,8 @@ export class RbacController {
   };
 
   public revokePermissionFromRole = async (req: Request, res: Response): Promise<Response> => {
-    const roleId = parseInt(req.params.roleId, 10);
-    const permissionId = parseInt(req.params.permissionId, 10);
+    const roleId = parseInt(req.params.roleId as string, 10);
+    const permissionId = parseInt(req.params.permissionId as string, 10);
     const adminUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;

@@ -15,7 +15,7 @@ export class PropertyController {
   };
 
   public getPropertyById = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
     const property = await this.propertyService.getPropertyById(propertyId);
     return ApiResponse.success(res, property, "Property details retrieved successfully.");
   };
@@ -26,7 +26,7 @@ export class PropertyController {
   };
 
   public updateProperty = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
     const userAgent = req.headers["user-agent"];
@@ -45,7 +45,7 @@ export class PropertyController {
   };
 
   public deleteProperty = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
     const userAgent = req.headers["user-agent"];
@@ -63,7 +63,7 @@ export class PropertyController {
   };
 
   public approveProperty = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.id, 10);
+    const propertyId = parseInt(req.params.id as string, 10);
     const adminUserId = req.user!.userId;
     const userAgent = req.headers["user-agent"];
     const ipAddress = req.ip;
@@ -79,7 +79,7 @@ export class PropertyController {
   };
 
   public addUnit = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.propertyId, 10);
+    const propertyId = parseInt(req.params.propertyId as string, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
     const userAgent = req.headers["user-agent"];
@@ -98,7 +98,7 @@ export class PropertyController {
   };
 
   public updateUnit = async (req: Request, res: Response): Promise<Response> => {
-    const unitId = parseInt(req.params.unitId, 10);
+    const unitId = parseInt(req.params.unitId as string, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
     const userAgent = req.headers["user-agent"];
@@ -117,13 +117,13 @@ export class PropertyController {
   };
 
   public uploadMedia = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.propertyId, 10);
+    const propertyId = parseInt(req.params.propertyId as string, 10);
     const requestorUserId = req.user!.userId;
     const requestorRole = req.user!.roleName;
     const file = req.file;
 
     if (!file) {
-      return ApiResponse.error(res, "NO_FILE_PROVIDED", "No media file uploaded.", 400);
+      return ApiResponse.failure(res, "NO_FILE_PROVIDED", "No media file uploaded.", 400);
     }
 
     const mediaUrl = `/uploads/${file.filename}`;
@@ -142,7 +142,7 @@ export class PropertyController {
   };
 
   public favoriteUnit = async (req: Request, res: Response): Promise<Response> => {
-    const unitId = parseInt(req.params.unitId, 10);
+    const unitId = parseInt(req.params.unitId as string, 10);
     const userId = req.user!.userId;
 
     await this.propertyService.toggleFavorite(userId, unitId, "add");
@@ -150,7 +150,7 @@ export class PropertyController {
   };
 
   public unfavoriteUnit = async (req: Request, res: Response): Promise<Response> => {
-    const unitId = parseInt(req.params.unitId, 10);
+    const unitId = parseInt(req.params.unitId as string, 10);
     const userId = req.user!.userId;
 
     await this.propertyService.toggleFavorite(userId, unitId, "remove");
@@ -179,7 +179,7 @@ export class PropertyController {
   };
 
   public getPropertyReviews = async (req: Request, res: Response): Promise<Response> => {
-    const propertyId = parseInt(req.params.propertyId, 10);
+    const propertyId = parseInt(req.params.propertyId as string, 10);
     const reviews = await this.propertyService.getPropertyReviews(propertyId);
     return ApiResponse.success(res, reviews, "Property reviews retrieved successfully.");
   };

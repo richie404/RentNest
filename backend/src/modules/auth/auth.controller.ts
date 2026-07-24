@@ -146,7 +146,7 @@ export class AuthController {
 
   public terminateSession = async (req: Request, res: Response): Promise<Response> => {
     const userId = req.user!.userId;
-    const sessionId = parseInt(req.params.sessionId, 10);
+    const sessionId = parseInt(req.params.sessionId as string, 10);
 
     await this.authService.terminateSession(userId, sessionId);
     return ApiResponse.success(res, null, "Session terminated successfully.");
