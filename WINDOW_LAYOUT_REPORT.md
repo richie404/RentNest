@@ -2,6 +2,17 @@
 
 This change is limited to window geometry and JavaFX layout. Colors, typography, controls, navigation destinations, authentication, database access, and business logic are preserved. Existing FXML filenames, controller names, `fx:id` values, and action handlers are unchanged.
 
+## Phase 1 audit and verification
+
+The Phase 1 request was checked against the current project before editing. The earlier responsive-layout implementation was already present, and the working tree was clean. All application Stage/Scene creation sites, window setters, all 21 FXML roots, significant child constraints, and CSS dimension rules were inspected. No additional production-code changes were necessary: the missing maximize/navigation/restore verification now passes on native Windows windows.
+
+Files changed in this pass:
+
+- **Created:** `src/test/java/NativeWindowCheck.java`, a standalone regression check that waits for native window events between actions. It checks initial sizing/centering, navigation across 12 pages in both normal and maximized states, restoration of the previous geometry, resizing after restore, and chat/booking windows with normal and maximized owners.
+- **Modified:** `WINDOW_LAYOUT_REPORT.md`, with this audit, current verification results, test command, and the Phase 1 checklist.
+
+No application Java files, FXML, CSS, packages, controller names, identifiers, handlers, business logic, or database code were changed in this pass. The following implementation sections describe the existing code verified by this audit.
+
 ## Window policy
 
 - `Main.java` replaces fixed 950 × 700 dimensions and disabled resizing with `WindowManager.configureMain(stage)`.
@@ -35,7 +46,7 @@ Homepage and browse property grids now use JavaFX `TilePane`, wrapping the same 
 - Property image height 250 and existing thumbnail bounds preserve image proportions; no image-loading code changed.
 - Table column widths preserve readable dates, amounts, IDs, and actions; scrolling handles narrow viewports.
 
-## Complete file list
+## Files from the earlier responsive-layout implementation
 
 New files:
 
@@ -68,11 +79,13 @@ Modified resources (under `src/main/resources/`):
 
 Clean compilation succeeded with Java 25. All 21 FXML layouts passed isolated loading/layout checks for 1366 × 768, 1600 × 900, 1920 × 1080, 2560 × 1440, and 800 × 600. The checks model a 48-pixel taskbar and window decorations, then apply the proportional sizing policy. These are logical viewport simulations, not five separate physical monitors.
 
-The standalone check verifies authentication-card width/centering, form control bounds, table growth, narrow embedded admin tables, property-card wrapping, main and secondary window bounds, ownership, and stable Scene/Stage geometry across navigation. Eight screens also load with their actual controllers. Homepage and browse use their actual field injection, handlers, and card renderers with initial database reads disabled in test subclasses and sample listings kept in memory.
+The standalone layout check verifies authentication-card width/centering, form control bounds, table growth, narrow embedded admin tables, property-card wrapping, main and secondary window bounds, ownership, and stable Scene/Stage geometry across navigation. Eight screens also load with their actual controllers. Homepage and browse use their actual field injection, handlers, and card renderers with initial database reads disabled in test subclasses and sample listings kept in memory. The clean build and all these checks were rerun successfully for Phase 1.
+
+`NativeWindowCheck` also passed on the current Windows display. Unlike the synchronous layout checks, it allows native window events and JavaFX layout pulses to settle before each geometry assertion. All 12 pages preserved the same Scene, dimensions, position, and maximized state. Maximize filled the usable display, restore returned to the recorded normal geometry within two logical pixels, and resizing after restore succeeded. Chat and booking windows were centered and bounded with both normal and maximized owners. Windows' invisible maximized frame borders can extend beyond visual bounds; initial and secondary window containment are checked separately from maximized content fill.
 
 The UI checks use software rendering after a native graphics crash during the initial test run. This affects only the test command; application rendering settings were not changed. Existing CSS gradient/color warnings remain outside this targeted layout change. No FXMLLoader errors remain in the checks.
 
-Manual previews were inspected for login, register, homepage, and browse. The updated application was launched with its normal renderer, and its RentNest window was confirmed open and responding. Physical multi-monitor transitions, OS maximize/restore interaction, and authenticated database workflows were not exhaustively tested.
+Manual previews were inspected for login, register, homepage, and browse during the earlier implementation. The updated application was launched with its normal renderer then, and its RentNest window was confirmed open and responding. The Phase 1 native-window checks use software rendering, but exercise actual Windows maximize and restore events. Physical multi-monitor transitions and authenticated database workflows were not exhaustively tested.
 
 To repeat the checks from PowerShell:
 
@@ -80,19 +93,27 @@ To repeat the checks from PowerShell:
 .\mvnw.cmd clean compile test-compile dependency:build-classpath '-Dmdep.outputFile=target/layout-classpath.txt'
 $layoutClasspath = 'target/classes;target/test-classes;' + (Get-Content target/layout-classpath.txt -Raw)
 & "$env:JAVA_HOME/bin/java.exe" '-Dprism.order=sw' --enable-native-access=ALL-UNNAMED -cp $layoutClasspath ResponsiveLayoutCheck
+& "$env:JAVA_HOME/bin/java.exe" '-Dprism.order=sw' --enable-native-access=ALL-UNNAMED -cp $layoutClasspath NativeWindowCheck
 ```
 
-The test writes previews and controller-free fixtures under `target/layout-check/`. It does not access or modify the database. If Maven clean fails on OneDrive's read-only generated directories, clear the read-only attributes only under `target` before rerunning.
+Run the layout check first: it writes previews and controller-free fixtures under `target/layout-check/`, which the native check reuses. Neither test accesses or modifies the database. The native check closes only its own temporary windows. If Maven clean fails on OneDrive's read-only generated directories, clear the read-only attributes only under `target` before rerunning.
 
-## Requested checklist
+Current run logs: `target/phase1-build.log`, `target/phase1-layout.log`, and `target/phase1-native.log`. The clean build compiled 56 application source files and 3 test source files successfully. No Java compilation or FXMLLoader errors were found. Existing CSS warnings remain unchanged.
 
-- [x] Main application is resizable.
-- [x] Main application adapts to screen resolution using visual bounds.
-- [x] Navigation preserves the Scene and Stage geometry.
-- [x] Login card no longer stretches across the window.
-- [x] Main pages use available space through growing lists/tables and wrapping cards.
-- [x] Secondary windows initialize inside screen bounds with an owner.
-- [x] 1366 × 768 layout simulation passes.
-- [x] 1920 × 1080 card sizes remain bounded; layout simulation passes.
-- [x] Existing functionality is preserved in the code changes; business workflows were not rewritten.
-- [x] Database and business logic were not changed.
+## Phase 1 requested checklist
+
+- [x] Primary Stage is resizable.
+- [x] Primary Stage adapts to screen resolution using visual bounds.
+- [x] Primary Stage stays consistent during normal and maximized navigation.
+- [x] Application does not initially cover the taskbar; native initial bounds check passes.
+- [x] Login form stays compact and centered.
+- [x] Register form stays usable, with scrolling in short viewports.
+- [x] Tables expand appropriately and preserve readable column widths.
+- [x] Dashboards use available space.
+- [x] Secondary windows remain inside screen bounds when opened, with either owner state.
+- [x] 1366 × 768 works in the layout simulation.
+- [x] 1920 × 1080 works in the layout simulation.
+- [x] Maximizing works in the native Windows test.
+- [x] Restoring works and recovers the previous normal geometry in the native Windows test.
+- [x] Business logic was untouched.
+- [x] Database code was untouched.
