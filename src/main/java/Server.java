@@ -96,15 +96,13 @@ public class Server {
                     if (f.length < 5) continue;
 
                     // Extract message details
-                    Integer listingId = null;
-                    try {
-                        int l = Integer.parseInt(f[1]);
-                        if (l >= 0) listingId = l;
-                    } catch (NumberFormatException ignored) {}
+                    int parsedListingId = Integer.parseInt(f[1]);
+                    Integer listingId = parsedListingId == -1 ? null : parsedListingId;
 
                     int senderId = Integer.parseInt(f[2]);
                     int receiverId = Integer.parseInt(f[3]);
                     String messageText = new String(Base64.getDecoder().decode(f[4]));
+                    if (senderId != userId) continue;
 
                     // Save message to database
                     Message msg = new Message();
@@ -118,11 +116,12 @@ public class Server {
                     } catch (Exception dbEx) {
                         System.err.println("❌ Database insert failed: " + dbEx.getMessage());
                         dbEx.printStackTrace();
+                        continue;
                     }
 
                     // Forward to receiver if they are connected
                     ClientHandler receiver = CLIENTS.get(receiverId);
-                    if (receiver != null) {
+                    if (receiver != null && receiver != this) {
                         receiver.send(line);
                     }
 

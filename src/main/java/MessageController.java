@@ -37,7 +37,7 @@ public class MessageController {
                     (msg.getSenderId() == senderId && msg.getReceiverId() == receiverId) ||
                             (msg.getSenderId() == receiverId && msg.getReceiverId() == senderId);
 
-            if (relevant) {
+            if (relevant && java.util.Objects.equals(msg.getListingId(), listingId)) {
                 Platform.runLater(() -> {
                     appendMessage(msg);
                     autoScrollToBottom();
@@ -121,18 +121,22 @@ public class MessageController {
         newMsg.setReceiverId(receiverId);
         newMsg.setMessageText(text);
 
-        // live
-        Client.getInstance().sendMessage(listingId, senderId, receiverId, text);
-
-        // persist
-        Task<Void> saveTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                messageDAO.addMessage(newMsg);
-                return null;
-            }
-        };
-        AppExecutor.getExecutor().submit(saveTask);
+        if (Client.getInstance().isConnected()) {
+            // The server persists once before forwarding to the receiver.
+            Client.getInstance().sendMessage(listingId, senderId, receiverId, text);
+        } else {
+            // Preserve offline database sending, without also sending over the socket.
+            Task<Void> saveTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    messageDAO.addMessage(newMsg);
+                    return null;
+                }
+            };
+            saveTask.setOnFailed(e -> messageContainer.getChildren().add(
+                    new Label("Failed to save message: " + saveTask.getException().getMessage())));
+            AppExecutor.getExecutor().submit(saveTask);
+        }
 
         // instant UI
         appendMessage(newMsg);

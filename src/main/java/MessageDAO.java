@@ -12,12 +12,17 @@ public class MessageDAO {
        📤 Add a new message (handles null listing_id)
        ----------------------------------------------------------- */
     public void addMessage(Message m) throws Exception {
+        if (m.getSenderId() <= 0 || m.getReceiverId() <= 0
+                || (m.getListingId() != null && m.getListingId() <= 0)
+                || m.getMessageText() == null || m.getMessageText().isBlank()) {
+            throw new IllegalArgumentException("Invalid message participants, listing or text");
+        }
         final String sql =
                 "INSERT INTO messages (listing_id, sender_id, receiver_id, message_text, timestamp) " +
                         "VALUES (?, ?, ?, ?, NOW())";
 
         try (Connection c = DBUtil.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             // ✅ listing_id can be NULL
             if (m.getListingId() == null)
@@ -29,6 +34,9 @@ public class MessageDAO {
             ps.setInt(3, m.getReceiverId());
             ps.setString(4, m.getMessageText());
             ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) m.setId(keys.getInt(1));
+            }
         }
     }
 
@@ -71,7 +79,7 @@ public class MessageDAO {
                             rs.getInt("sender_id"),
                             rs.getInt("receiver_id"),
                             rs.getString("message_text"),
-                            rs.getTimestamp("timestamp").toLocalDateTime()
+                            rs.getTimestamp("timestamp") == null ? null : rs.getTimestamp("timestamp").toLocalDateTime()
                     ));
                 }
             }
@@ -101,7 +109,7 @@ public class MessageDAO {
                             rs.getInt("sender_id"),
                             rs.getInt("receiver_id"),
                             rs.getString("message_text"),
-                            rs.getTimestamp("timestamp").toLocalDateTime()
+                            rs.getTimestamp("timestamp") == null ? null : rs.getTimestamp("timestamp").toLocalDateTime()
                     ));
                 }
             }
@@ -131,7 +139,7 @@ public class MessageDAO {
                             rs.getInt("sender_id"),
                             rs.getInt("receiver_id"),
                             rs.getString("message_text"),
-                            rs.getTimestamp("timestamp").toLocalDateTime()
+                            rs.getTimestamp("timestamp") == null ? null : rs.getTimestamp("timestamp").toLocalDateTime()
                     ));
                 }
             }
@@ -164,7 +172,7 @@ public class MessageDAO {
                             rs.getInt("sender_id"),
                             rs.getInt("receiver_id"),
                             rs.getString("message_text"),
-                            rs.getTimestamp("timestamp").toLocalDateTime()
+                            rs.getTimestamp("timestamp") == null ? null : rs.getTimestamp("timestamp").toLocalDateTime()
                     ));
                 }
             }

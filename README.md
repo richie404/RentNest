@@ -45,12 +45,57 @@ The included `rentnest.sql` file creates the full database structure for the app
 - `bookings` — reservation records with status tracking
 - `favorites` — saved listings for users
 - `messages` — stored chat messages between users
-- `socket_messages` — socket chat history support
 - `listing_photos` — listing image URLs
 - `inquiries` — renter inquiries about listings
 - `payments` — payment transaction records
 
-If you change the schema or seed data, re-import the file into your local `rentnest` database and restart the app.
+Use the dump for new installations only; do not re-import sample data over an existing database.
+
+### Consolidating existing chat data
+
+`messages` stores all persistent chat history, including real-time messages. The
+project uses Java TCP sockets (not Socket.IO): `Server` on port 5000 and the legacy
+`ChatServer` on port 5050. Both save through `MessageDAO` before forwarding.
+`MessageController` sends through the server when connected and saves directly
+only when disconnected. `ChatWindowController` retains its direct database path.
+
+For an existing installation, back up the database, stop every app instance and
+both servers, deploy the updated code, then run
+`migrations/consolidate_messages.sql` against the existing database using the
+MySQL client without `--force`. Keep writers stopped throughout migration.
+The script inspects the schemas and counts, copies legacy messages with newly
+generated IDs, verifies the copy, and only then drops the legacy table. It leaves
+existing `messages` rows, indexes and foreign keys unchanged. Invalid foreign-key
+references abort the copy.
+
+If identical records exist in both tables, the script stops for review rather
+than guessing whether they are duplicates. Compare listing, sender, receiver,
+the exact message text and timestamp. Only if these are copies of the same sends,
+call `CALL rentnest_consolidate_messages(TRUE);` in the MySQL client, then
+`DROP PROCEDURE rentnest_consolidate_messages;`. Matching preserves repeated
+identical sends one-for-one. If they are distinct sends, resolve that ambiguity
+before proceeding. On other failures the procedure remains available for a
+retry with `FALSE`; do not rerun its CREATE statement while it still exists.
+If interrupted after the copy commits but before the drop, verify the committed
+copy and retry with `TRUE`. Never drop the legacy table manually to bypass errors.
+
+Messaging integration checks are in `src/test/java/MessagingIntegrationCheck.java`.
+They run separately from Maven's default test discovery. Use a disposable MySQL
+or MariaDB instance on `127.0.0.1:3307`, with a fresh database named
+`rentnest_messaging_test` containing `rentnest.sql`, and root with an empty password.
+Ports 5000 and 5050 must be free. The check redirects application JDBC connections
+to that test database within its JVM; it never connects to the normal port 3306.
+After `mvnw.cmd test`, run on Windows with JDK 25:
+
+```powershell
+$chatTestClasspath = "target/classes;target/test-classes;$env:USERPROFILE/.m2/repository/com/mysql/mysql-connector-j/9.0.0/mysql-connector-j-9.0.0.jar"
+java -cp $chatTestClasspath MessagingIntegrationCheck
+java -cp $chatTestClasspath MessagingIntegrationCheck restart
+```
+
+The second invocation checks persistent history with a restarted server in a new
+JVM. These checks exercise database and socket behavior; JavaFX screen rendering
+and unrelated application workflows still require manual smoke testing.
 
 ## Build and Run
 

@@ -234,21 +234,6 @@ CREATE TABLE `payments` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `socket_messages`
---
-
-CREATE TABLE `socket_messages` (
-  `id` int(11) NOT NULL,
-  `listing_id` int(11) DEFAULT NULL,
-  `sender_id` int(11) NOT NULL,
-  `receiver_id` int(11) NOT NULL,
-  `message_text` text NOT NULL,
-  `timestamp` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `users`
 --
 
@@ -362,15 +347,6 @@ ALTER TABLE `payments`
   ADD KEY `booking_id` (`booking_id`);
 
 --
--- Indexes for table `socket_messages`
---
-ALTER TABLE `socket_messages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_socket_listing` (`listing_id`),
-  ADD KEY `fk_socket_sender` (`sender_id`),
-  ADD KEY `fk_socket_receiver` (`receiver_id`);
-
---
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -428,12 +404,6 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `socket_messages`
---
-ALTER TABLE `socket_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -499,14 +469,6 @@ ALTER TABLE `messages`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `socket_messages`
---
-ALTER TABLE `socket_messages`
-  ADD CONSTRAINT `fk_socket_listing` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_socket_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_socket_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `admin_actions`

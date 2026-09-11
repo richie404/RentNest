@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.sql.*;
 import java.util.*;
 
 public class ChatServer {
@@ -44,8 +43,7 @@ public class ChatServer {
                 String msg;
                 while ((msg = in.readLine()) != null) {
                     System.out.println("📩 " + msg);
-                    saveToDatabase(msg);
-                    broadcast(msg, this);
+                    if (saveToDatabase(msg)) broadcast(msg, this);
                 }
             } catch (IOException e) {
                 System.out.println("❌ Client disconnected");
@@ -57,25 +55,22 @@ public class ChatServer {
 
         void send(String msg) { out.println(msg); }
 
-        // ✅ Save message to new table: socket_messages
-        private void saveToDatabase(String msg) {
-            try (Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost/rentnest", "root", "");
-                 PreparedStatement ps = conn.prepareStatement(
-                         "INSERT INTO socket_messages (listing_id, sender_id, receiver_id, message_text) VALUES (?, ?, ?, ?)")) {
-
+        // Use the same persistent storage as conversation history.
+        private boolean saveToDatabase(String msg) {
+            try {
                 // expected message format: listingId|senderId|receiverId|text
                 String[] parts = msg.split("\\|", 4);
                 if (parts.length == 4) {
-                    ps.setInt(1, Integer.parseInt(parts[0]));
-                    ps.setInt(2, Integer.parseInt(parts[1]));
-                    ps.setInt(3, Integer.parseInt(parts[2]));
-                    ps.setString(4, parts[3]);
-                    ps.executeUpdate();
+                    int listingId = Integer.parseInt(parts[0]);
+                    Message message = new Message(listingId == -1 ? null : listingId,
+                            Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), parts[3]);
+                    new MessageDAO().addMessage(message);
+                    return true;
                 }
             } catch (Exception e) {
                 System.out.println("⚠️ DB Save Failed: " + e.getMessage());
             }
+            return false;
         }
     }
 }
