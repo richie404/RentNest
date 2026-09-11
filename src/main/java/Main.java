@@ -7,9 +7,7 @@ public class Main extends Application {
     public void start(Stage stage) {
         Router.setStage(stage);
         stage.setTitle("RentNest");
-        stage.setWidth(950);
-        stage.setHeight(700);
-        stage.setResizable(false);
+        WindowManager.configureMain(stage);
         Router.goToIndex();  // ✅ Opens homepage.fxml on launch
     }
 

@@ -25,7 +25,7 @@
 
         <!-- 👤 User Info + Logout -->
         <HBox spacing="12" alignment="CENTER_RIGHT">
-            <Label fx:id="userLabel" text="Logged in as: Guest" styleClass="user-label"/>
+            <Label fx:id="userLabel" text="Logged in as: Guest" styleClass="user-label" minWidth="0" maxWidth="240"/>
             <Button fx:id="btnLogout" text="Logout" onAction="#handleLogout" styleClass="btn-primary"/>
         </HBox>
 

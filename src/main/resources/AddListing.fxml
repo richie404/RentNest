@@ -17,7 +17,9 @@
     </top>
 
     <center>
-        <VBox fx:id="formContainer" spacing="12" alignment="CENTER">
+        <ScrollPane fitToWidth="true" fitToHeight="true" style="-fx-background-color: transparent;">
+        <StackPane>
+        <VBox fx:id="formContainer" spacing="12" alignment="CENTER" minHeight="-Infinity" maxHeight="-Infinity">
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
@@ -32,11 +34,11 @@
             <TextField fx:id="imageUrlField" promptText="Image URL (optional)" styleClass="text-field"/>
 
             <!-- Extra Options -->
-            <HBox spacing="20" alignment="CENTER">
+            <FlowPane hgap="20" vgap="12" alignment="CENTER">
                 <CheckBox fx:id="furnishedCheck" text="Furnished"/>
                 <CheckBox fx:id="bachelorCheck" text="Bachelor Allowed" selected="true"/>
                 <CheckBox fx:id="familyCheck" text="Family Allowed" selected="true"/>
-            </HBox>
+            </FlowPane>
 
             <!-- Description -->
             <TextArea fx:id="descriptionArea" promptText="Description" prefRowCount="3" styleClass="text-area"/>
@@ -44,5 +46,7 @@
             <!-- Submit -->
             <Button text="Save Listing" onAction="#handleSave" styleClass="button-primary"/>
         </VBox>
+        </StackPane>
+        </ScrollPane>
     </center>
 </BorderPane>

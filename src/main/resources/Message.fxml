@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="MessageController"
-            stylesheets="@Message.css"
-            prefWidth="900" prefHeight="650">
+            stylesheets="@Message.css">
 
     <!-- 🌈 Header -->
     <top>
@@ -27,7 +26,7 @@
                     styleClass="chat-scroll">
             <VBox fx:id="messageContainer"
                   styleClass="message-container"
-                  prefWidth="850"/>
+                  minWidth="0"/>
         </ScrollPane>
     </center>
 

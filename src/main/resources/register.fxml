@@ -4,21 +4,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
+<StackPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="RegisterController"
             stylesheets="@register.css"
             styleClass="root">
 
     <children>
-        <VBox alignment="CENTER"
-              AnchorPane.topAnchor="0"
-              AnchorPane.bottomAnchor="0"
-              AnchorPane.leftAnchor="0"
-              AnchorPane.rightAnchor="0"
-              spacing="18">
+        <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED"
+                    styleClass="auth-scroll">
+        <StackPane>
+            <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
 
             <!-- Register Card -->
             <VBox alignment="CENTER" spacing="12"
+                  minWidth="0" prefWidth="460" maxWidth="460"
+                  minHeight="-Infinity" maxHeight="-Infinity"
                   styleClass="register-card">
 
                 <children>
@@ -51,7 +51,7 @@
                         <ComboBox fx:id="roleBox"
                                   promptText="Select Role"
                                   styleClass="combo-box"
-                                  prefWidth="220"/>
+                                  maxWidth="Infinity"/>
                     </VBox>
 
                     <!-- Register Button -->
@@ -60,6 +60,7 @@
                             styleClass="button-register"/>
 
                     <Hyperlink text="Already have an account? Log into your account!"
+                               wrapText="true"
                                onAction="#handleGoLogin"
                                styleClass="button-secondary"/>
                     <!-- Back to Home -->
@@ -68,6 +69,7 @@
                             styleClass="button-back-home"/>
                 </children>
             </VBox>
-        </VBox>
+        </StackPane>
+        </ScrollPane>
     </children>
-</AnchorPane>
+</StackPane>

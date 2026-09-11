@@ -142,6 +142,7 @@ public class OwnerDashboardController extends BaseController {
             Stage stage = new Stage();
             stage.setTitle("Chat - " + title);
             stage.setScene(new Scene(root));
+            WindowManager.configureSecondary(stage, messageList.getScene().getWindow());
             stage.show();
 
         } catch (Exception e) {

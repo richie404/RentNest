@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
+<?import ui.ResponsiveTableView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
@@ -17,20 +18,20 @@
     <Label text="📅 My Bookings" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
     <!-- Table -->
-    <TableView fx:id="bookingTable" prefHeight="400">
+    <ResponsiveTableView fx:id="bookingTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colBookingId" text="Booking ID" prefWidth="100"/>
-            <TableColumn fx:id="colProperty" text="Property ID" prefWidth="100"/>
-            <TableColumn fx:id="colOwner" text="Owner ID" prefWidth="100"/>
-            <TableColumn fx:id="colStart" text="Start Date" prefWidth="120"/>
-            <TableColumn fx:id="colEnd" text="End Date" prefWidth="120"/>
-            <TableColumn fx:id="colAmount" text="Total Amount" prefWidth="140"/>
-            <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
+            <TableColumn fx:id="colBookingId" text="Booking ID" prefWidth="100" minWidth="100"/>
+            <TableColumn fx:id="colProperty" text="Property ID" prefWidth="100" minWidth="100"/>
+            <TableColumn fx:id="colOwner" text="Owner ID" prefWidth="100" minWidth="100"/>
+            <TableColumn fx:id="colStart" text="Start Date" prefWidth="120" minWidth="120"/>
+            <TableColumn fx:id="colEnd" text="End Date" prefWidth="120" minWidth="120"/>
+            <TableColumn fx:id="colAmount" text="Total Amount" prefWidth="140" minWidth="140"/>
+            <TableColumn fx:id="colStatus" text="Status" prefWidth="120" minWidth="120"/>
         </columns>
-    </TableView>
+    </ResponsiveTableView>
 
     <!-- Buttons -->
-    <HBox spacing="12" alignment="CENTER_RIGHT">
+    <FlowPane hgap="12" vgap="12" alignment="CENTER_RIGHT">
         <Button text="Cancel Booking" onAction="#handleCancel" styleClass="button-primary"/>
-    </HBox>
+    </FlowPane>
 </VBox>

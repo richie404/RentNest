@@ -7,8 +7,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="PropertyDetailsController"
-            stylesheets="@PropertyDetails.css"
-            prefWidth="950" prefHeight="700">
+            stylesheets="@PropertyDetails.css">
 
     <!-- ===== Header ===== -->
     <top>
@@ -23,32 +22,34 @@
     <center>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
             <content>
-                <VBox spacing="20" alignment="TOP_CENTER">
+                <VBox spacing="20" alignment="TOP_CENTER" minWidth="0">
                     <padding>
                         <Insets top="20" right="20" bottom="40" left="20"/>
                     </padding>
 
                     <!-- 🖼️ Image -->
-                    <ImageView fx:id="propertyImage" fitWidth="400" fitHeight="250"
+                    <StackPane fx:id="imageContainer" minWidth="0" maxWidth="400">
+                    <ImageView fx:id="propertyImage" fitWidth="${imageContainer.width}" fitHeight="250"
                                preserveRatio="true" smooth="true"/>
+                    </StackPane>
 
                     <!-- 🏷️ Text Fields -->
-                    <Label fx:id="titleLabel" styleClass="property-title"/>
-                    <Label fx:id="locationLabel" styleClass="property-location"/>
+                    <Label fx:id="titleLabel" styleClass="property-title" wrapText="true"/>
+                    <Label fx:id="locationLabel" styleClass="property-location" wrapText="true"/>
                     <Label fx:id="priceLabel" styleClass="property-price"/>
 
                     <!-- 📝 Description -->
                     <TextArea fx:id="descriptionArea"
                               editable="false" wrapText="true"
-                              prefWidth="500" prefHeight="150"
+                              prefWidth="500" maxWidth="900" prefHeight="150"
                               styleClass="property-description"/>
 
                     <!-- ✨ Action Buttons -->
-                    <HBox spacing="15" alignment="CENTER">
+                    <FlowPane hgap="15" vgap="15" alignment="CENTER">
                         <Button text="Add to Favourites" onAction="#handleFavorite" styleClass="button-primary"/>
                         <Button text="Book Property" onAction="#handleBook" styleClass="button-secondary"/>
                         <Button text="💬 Chat with Owner" onAction="#handleChat" styleClass="button-primary"/>
-                    </HBox>
+                    </FlowPane>
 
                 </VBox>
             </content>

@@ -27,7 +27,7 @@
     <center>
         <ScrollPane fitToWidth="true" vbarPolicy="AS_NEEDED" style="-fx-background-color: transparent;">
             <content>
-                <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 50 80;">
+                <VBox alignment="TOP_CENTER" spacing="20" minWidth="0" style="-fx-padding: 50 80;">
                     <Label text="RENTNEST"
                            style="-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #591734;"/>
 
@@ -37,7 +37,8 @@
                     <Label text="Fariya Afrin Riche • A.T.M. Thouhidul Alam • Safin Ahmed"
                            style="-fx-font-size: 13px; -fx-text-fill: #591734;"/>
 
-                    <Text wrappingWidth="900" textAlignment="JUSTIFY"
+                    <StackPane fx:id="aboutTextContainer" minWidth="0" maxWidth="900">
+                    <Text wrappingWidth="${aboutTextContainer.width}" textAlignment="JUSTIFY"
                           style="-fx-font-size: 16px; -fx-line-spacing: 5; -fx-text-fill: #3a2c35;">
                         In today’s dynamic housing market, RentNest redefines how people find and manage rental properties.
                         Designed for both renters and property owners, RentNest offers an intuitive platform where convenience,
@@ -50,6 +51,7 @@
                         Backed by a passionate development team, RentNest continues to evolve with a single mission:
                         to make renting simpler, smarter, and stress-free for everyone.
                     </Text>
+                    </StackPane>
                 </VBox>
             </content>
         </ScrollPane>

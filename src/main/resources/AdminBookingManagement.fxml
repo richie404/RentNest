@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
+<?import ui.ResponsiveTableView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="AdminBookingManagementController"
-            stylesheets="@admin-shared.css"
-            prefWidth="950" prefHeight="700">
+            stylesheets="@admin-shared.css">
 
     <!-- Top Section (Title) -->
     <top>
@@ -26,32 +26,32 @@
             <padding>
                 <Insets top="10" right="20" bottom="10" left="20"/>
             </padding>
-            <TableView fx:id="bookingTable" prefHeight="500" styleClass="table-view">
+            <ResponsiveTableView fx:id="bookingTable" styleClass="table-view" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colId" text="Booking ID" prefWidth="100"/>
-                    <TableColumn fx:id="colProperty" text="Property ID" prefWidth="120"/>
-                    <TableColumn fx:id="colRenter" text="Renter ID" prefWidth="120"/>
-                    <TableColumn fx:id="colOwner" text="Owner ID" prefWidth="120"/>
-                    <TableColumn fx:id="colStart" text="Start Date" prefWidth="120"/>
-                    <TableColumn fx:id="colEnd" text="End Date" prefWidth="120"/>
-                    <TableColumn fx:id="colAmount" text="Total Amount" prefWidth="140"/>
-                    <TableColumn fx:id="colStatus" text="Status" prefWidth="180"/>
+                    <TableColumn fx:id="colId" text="Booking ID" prefWidth="100" minWidth="100"/>
+                    <TableColumn fx:id="colProperty" text="Property ID" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colRenter" text="Renter ID" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colOwner" text="Owner ID" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colStart" text="Start Date" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colEnd" text="End Date" prefWidth="120" minWidth="120"/>
+                    <TableColumn fx:id="colAmount" text="Total Amount" prefWidth="140" minWidth="140"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="180" minWidth="180"/>
                 </columns>
-            </TableView>
+            </ResponsiveTableView>
         </VBox>
     </center>
 
     <!-- Bottom Section (Buttons) -->
     <bottom>
-        <HBox spacing="12" alignment="CENTER_RIGHT">
+        <FlowPane hgap="12" vgap="12" alignment="CENTER_RIGHT">
             <padding>
                 <Insets top="10" right="20" bottom="20" left="20"/>
             </padding>
-            <Pane HBox.hgrow="ALWAYS"/>
+
             <Button text="Approve" onAction="#handleApprove" styleClass="button-primary"/>
             <Button text="Reject" onAction="#handleReject" styleClass="button-secondary"/>
             <Button text="Delete" onAction="#handleDelete" styleClass="button-secondary"/>
-        </HBox>
+        </FlowPane>
     </bottom>
 
 </BorderPane>

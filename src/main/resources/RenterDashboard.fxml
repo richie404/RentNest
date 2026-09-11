@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="RenterDashboardController"
-            stylesheets="@RenterDashboard.css"
-            prefWidth="950" prefHeight="700">
+            stylesheets="@RenterDashboard.css">
 
     <!-- 🔹 Shared Top Bar -->
     <top>
@@ -15,7 +14,7 @@
 
     <!-- 🔹 Dashboard Tabs -->
     <center>
-        <TabPane prefWidth="900" prefHeight="650">
+        <TabPane minWidth="0" minHeight="0">
             <tabs>
 
                 <!-- 🏡 Dashboard Tab -->
@@ -46,9 +45,7 @@
                                        styleClass="page-title"/>
 
                                 <ListView fx:id="favoritesList"
-                                          prefWidth="750"
-                                          prefHeight="400"
-                                          styleClass="list-view"/>
+                                          styleClass="list-view" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
                             </VBox>
                         </center>
                     </BorderPane>
@@ -61,9 +58,7 @@
                                styleClass="page-title"/>
 
                         <ListView fx:id="messageList"
-                                  prefWidth="750"
-                                  prefHeight="400"
-                                  styleClass="list-view"/>
+                                  styleClass="list-view" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
 
                         <HBox spacing="10" alignment="CENTER_RIGHT">
                             <Pane HBox.hgrow="ALWAYS"/>

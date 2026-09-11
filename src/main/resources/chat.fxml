@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ChatController"
-            stylesheets="@chat.css"
-            prefWidth="900" prefHeight="650">
+            stylesheets="@chat.css">
 
     <!-- 🔹 Header -->
     <top>
@@ -31,7 +30,7 @@
             <VBox fx:id="chatContainer"
                   spacing="10"
                   style="-fx-padding: 16; -fx-background-color: #fffafc;"
-                  prefWidth="850"/>
+                  minWidth="0"/>
         </ScrollPane>
     </center>
 

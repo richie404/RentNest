@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="OwnerDashboardController"
-            stylesheets="@ownerdashboard.css"
-            prefWidth="950" prefHeight="700">
+            stylesheets="@ownerdashboard.css">
 
     <!-- 🔹 Shared Top Bar -->
     <top>
@@ -15,7 +14,7 @@
 
     <!-- 🔹 Main content -->
     <center>
-        <TabPane prefWidth="900" prefHeight="650">
+        <TabPane minWidth="0" minHeight="0">
             <tabs>
 
                 <!-- 🏠 Dashboard Tab -->
@@ -50,11 +49,10 @@
                                 </HBox>
 
                                 <ListView fx:id="propertyList"
-                                          prefHeight="440"
                                           style="-fx-background-color: #ffffff;
                                                  -fx-background-radius: 8;
                                                  -fx-border-color: #d9d9d9;
-                                                 -fx-border-radius: 8;"/>
+                                                 -fx-border-radius: 8;" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
 
                                 <Label text="Select 'Manage Listings' to edit or delete your properties."
                                        style="-fx-font-size: 13px; -fx-text-fill: #555;"
@@ -74,11 +72,10 @@
                         <Label text="Messages from Renters" styleClass="page-title"/>
 
                         <ListView fx:id="messageList"
-                                  prefHeight="460"
                                   style="-fx-background-color: #ffffff;
                                          -fx-border-color: #d9d9d9;
                                          -fx-border-radius: 8;
-                                         -fx-background-radius: 8;"/>
+                                         -fx-background-radius: 8;" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
 
                         <HBox spacing="10" alignment="CENTER_RIGHT">
                             <Pane HBox.hgrow="ALWAYS"/>

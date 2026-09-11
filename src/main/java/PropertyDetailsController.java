@@ -78,6 +78,7 @@ public class PropertyDetailsController extends BaseController {
             Stage stage = new Stage();
             stage.setTitle("Confirm Booking - " + optListing.map(Listing::getTitle).orElse("Property"));
             stage.setScene(new Scene(root));
+            WindowManager.configureSecondary(stage, titleLabel.getScene().getWindow());
             stage.show();
 
         } catch (Exception e) {
@@ -127,6 +128,7 @@ public class PropertyDetailsController extends BaseController {
             Stage stage = new Stage();
             stage.setTitle("Chat - " + propertyTitle);
             stage.setScene(new Scene(root));
+            WindowManager.configureSecondary(stage, titleLabel.getScene().getWindow());
             stage.show();
 
         } catch (Exception e) {

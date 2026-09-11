@@ -7,8 +7,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="BookPropertyController"
-            stylesheets="@bookproperty.css"
-            prefWidth="900" prefHeight="700">
+            stylesheets="@bookproperty.css">
 
     <!-- ====== Header ====== -->
     <top>
@@ -34,11 +33,11 @@
                     </padding>
 
                     <!-- Property Summary -->
-                    <VBox styleClass="property-summary" alignment="CENTER">
+                    <VBox fx:id="propertySummary" styleClass="property-summary" alignment="CENTER" minWidth="0" maxWidth="500">
                         <Label fx:id="propertyName" styleClass="property-summary-title"/>
                         <Text text="Please review the property details before confirming your booking."
                               styleClass="form-subtitle"
-                              wrappingWidth="500"/>
+                              wrappingWidth="${propertySummary.width}"/>
                     </VBox>
 
                     <!-- Booking Form -->

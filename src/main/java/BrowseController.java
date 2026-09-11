@@ -4,7 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 
 public class BrowseController extends BaseController implements Initializable {
 
-    @FXML private GridPane grid;
+    @FXML private TilePane grid;
     @FXML private TextField searchField;
 
     // 🔹 Filter controls (from sidebar)
@@ -110,23 +110,18 @@ public class BrowseController extends BaseController implements Initializable {
 
     private void populate(List<Listing> listings) {
         grid.getChildren().clear();
-        int row = 0, col = 0, cols = 3;
-
         for (Listing l : listings) {
             VBox card = buildCard(l);
-            GridPane.setMargin(card, new Insets(10));
-            grid.add(card, col, row);
-
-            if (++col >= cols) {
-                col = 0;
-                row++;
-            }
+            TilePane.setMargin(card, new Insets(10));
+            grid.getChildren().add(card);
         }
     }
 
     private VBox buildCard(Listing l) {
         VBox card = new VBox(6);
         card.getStyleClass().add("property-card");
+        card.setPrefWidth(300);
+        card.setMaxWidth(300);
 
         ImageView img = new ImageView();
         img.setFitWidth(220);
@@ -141,10 +136,12 @@ public class BrowseController extends BaseController implements Initializable {
 
         Label title = new Label(l.getTitle());
         title.getStyleClass().add("card-title");
+        title.setWrapText(true);
 
         Label meta = new Label(l.getLocation() + " • " +
                 (l.getListingType() != null ? l.getListingType() : "Property"));
         meta.getStyleClass().add("card-meta");
+        meta.setWrapText(true);
 
         Label price = new Label("৳" + l.getPricePerMonth() + "/mo");
         price.getStyleClass().add("price");

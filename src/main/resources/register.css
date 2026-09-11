@@ -26,6 +26,10 @@
     -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 10, 0.2, 0, 4);
 }
 
+.auth-scroll, .auth-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
 .register-title {
     -fx-font-size: 22px;
     -fx-font-weight: bold;

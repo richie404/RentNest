@@ -8,15 +8,18 @@
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="LoginController"
-           prefWidth="900" prefHeight="600"
            stylesheets="@login.css"
            styleClass="root">
 
+    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="AS_NEEDED"
+                styleClass="auth-scroll">
+    <StackPane>
+        <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
     <!-- Centered Login Card -->
     <VBox alignment="CENTER"
           spacing="18"
-          prefWidth="300"
-          prefHeight="380"
+          minWidth="0" prefWidth="420" maxWidth="420"
+          minHeight="-Infinity" maxHeight="-Infinity"
           styleClass="login-card">
 
         <padding>
@@ -66,4 +69,6 @@
                     styleClass="button-back-home"/>
         </children>
     </VBox>
+    </StackPane>
+    </ScrollPane>
 </StackPane>

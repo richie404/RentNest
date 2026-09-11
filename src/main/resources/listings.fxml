@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import ui.ResponsiveTableView?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
@@ -30,15 +31,15 @@
             </padding>
 
             <!-- ✅ TableView Styled -->
-            <TableView fx:id="table" prefHeight="400" prefWidth="700">
+            <ResponsiveTableView fx:id="table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colTitle" text="Title" prefWidth="150"/>
-                    <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
-                    <TableColumn fx:id="colLocation" text="Location" prefWidth="150"/>
-                    <TableColumn fx:id="colPrice" text="Price/mo" prefWidth="100"/>
-                    <TableColumn fx:id="colSize" text="Size (sqft)" prefWidth="100"/>
+                    <TableColumn fx:id="colTitle" text="Title" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colType" text="Type" prefWidth="100" minWidth="100"/>
+                    <TableColumn fx:id="colLocation" text="Location" prefWidth="150" minWidth="150"/>
+                    <TableColumn fx:id="colPrice" text="Price/mo" prefWidth="100" minWidth="100"/>
+                    <TableColumn fx:id="colSize" text="Size (sqft)" prefWidth="100" minWidth="100"/>
                 </columns>
-            </TableView>
+            </ResponsiveTableView>
 
             <!-- 🔘 Action Buttons -->
             <HBox spacing="10" alignment="CENTER">

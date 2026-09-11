@@ -105,3 +105,7 @@
     -fx-border-color: -fx-primary;
     -fx-text-fill: -fx-primary;
 }
+
+.auth-scroll, .auth-scroll > .viewport {
+    -fx-background-color: transparent;
+}

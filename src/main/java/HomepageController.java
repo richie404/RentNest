@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
@@ -19,7 +19,7 @@ public class HomepageController extends BaseController implements Initializable 
     /* -----------------------------------------------------------
        🔹 UI Elements
        ----------------------------------------------------------- */
-    @FXML private GridPane featuredGrid;
+    @FXML private TilePane featuredGrid;
     @FXML private TextField searchField;
 
     // Top bar
@@ -111,22 +111,18 @@ public class HomepageController extends BaseController implements Initializable 
         if (featuredGrid == null) return;
         featuredGrid.getChildren().clear();
 
-        int col = 0, row = 0;
-        final int cols = 3;
-
         for (Listing l : items) {
             VBox card = buildCard(l);
-            GridPane.setMargin(card, new Insets(10));
-            featuredGrid.add(card, col, row);
-
-            col++;
-            if (col >= cols) { col = 0; row++; }
+            TilePane.setMargin(card, new Insets(10));
+            featuredGrid.getChildren().add(card);
         }
     }
 
     private VBox buildCard(Listing l) {
         VBox card = new VBox(6);
         card.getStyleClass().add("property-card");
+        card.setPrefWidth(300);
+        card.setMaxWidth(300);
 
         ImageView img = new ImageView();
         img.setFitWidth(240);
@@ -141,9 +137,11 @@ public class HomepageController extends BaseController implements Initializable 
 
         Label title = new Label(l.getTitle());
         title.getStyleClass().add("card-title");
+        title.setWrapText(true);
 
         Label meta = new Label(l.getLocation() + " • " + l.getListingType());
         meta.getStyleClass().add("card-meta");
+        meta.setWrapText(true);
 
         Label price = new Label("৳" + l.getPricePerMonth() + "/mo");
         price.getStyleClass().add("price");

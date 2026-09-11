@@ -86,7 +86,7 @@ public class MessageController {
         bubble.setWrapText(true);
         bubble.getStyleClass().addAll("bubble", isMine ? "bubble-out" : "bubble-in");
         bubble.setMaxWidth(480);
-        bubble.setMinWidth(Region.USE_PREF_SIZE);
+        bubble.setMinWidth(0);
 
         // Row = HBox(bubble + flexible spacer) to push to left/right
         HBox row = new HBox();

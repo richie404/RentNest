@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ChatWindowController"
-            stylesheets="@ChatWindow.css"
-            prefWidth="880" prefHeight="620">
+            stylesheets="@ChatWindow.css">
 
     <!-- Header -->
     <top>

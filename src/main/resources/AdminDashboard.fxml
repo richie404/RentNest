@@ -5,8 +5,7 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="AdminDashboardController"
-            stylesheets="@admindashboard.css"
-            prefWidth="950" prefHeight="700">
+            stylesheets="@admindashboard.css">
 
     <!-- 🔹 Shared Top Bar -->
     <top>
@@ -29,6 +28,7 @@
 
             <!-- 🔹 Sidebar Navigation -->
             <left>
+                <ScrollPane fitToWidth="true" prefWidth="240" minWidth="210" style="-fx-background-color: transparent;">
                 <VBox spacing="10" style="-fx-background-color: #fff3f6;">
                     <padding>
                         <Insets top="20" right="20" bottom="20" left="20"/>
@@ -64,11 +64,12 @@
                             styleClass="button-primary"
                             maxWidth="Infinity"/>
                 </VBox>
+                </ScrollPane>
             </left>
 
             <!-- 🔹 Dynamic Content Area -->
             <center>
-                <StackPane fx:id="contentArea">
+                <StackPane fx:id="contentArea" minWidth="0" minHeight="0">
                     <padding>
                         <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>

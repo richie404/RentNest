@@ -16,11 +16,13 @@
             <HBox spacing="18" alignment="CENTER_LEFT"
                   style="-fx-background-color: #591734; -fx-padding: 20 32 20 32;">
                 <Label fx:id="welcomeLabel" text="Welcome to RentNest 🏠"
+                       minWidth="0" wrapText="true" HBox.hgrow="ALWAYS"
                        style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: 800;"/>
 
                 <Pane HBox.hgrow="ALWAYS"/>
 
                 <Hyperlink fx:id="loginLink"
+                           managed="${loginLink.visible}"
                            text="Login" onAction="#handleLogin"
                            style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
                                   -fx-font-weight: 700; -fx-font-size: 15px;
@@ -28,6 +30,7 @@
                                   -fx-border-width: 2; -fx-border-radius: 16; -fx-background-radius: 16;"/>
 
                 <Hyperlink fx:id="registerLink"
+                           managed="${registerLink.visible}"
                            text="Register" onAction="#handleRegister"
                            style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
                                   -fx-font-weight: 700; -fx-font-size: 15px;
@@ -35,6 +38,7 @@
                                   -fx-border-width: 2; -fx-border-radius: 16; -fx-background-radius: 16;"/>
 
                 <Hyperlink fx:id="logoutLink"
+                           managed="${logoutLink.visible}"
                            text="Logout" onAction="#handleLogout"
                            visible="false"
                            style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
@@ -48,7 +52,7 @@
 
             <!-- Search Bar Section -->
             <HBox spacing="8" alignment="CENTER" styleClass="hero">
-                <TextField fx:id="searchField" promptText="Search by title or location…" prefWidth="560"/>
+                <TextField fx:id="searchField" promptText="Search by title or location…" prefWidth="560" maxWidth="560" minWidth="0" HBox.hgrow="ALWAYS"/>
                 <Button text="Search" onAction="#handleSearch" styleClass="btn btn-primary"/>
             </HBox>
         </VBox>
@@ -82,39 +86,39 @@
                                style="-fx-text-fill: #666666; -fx-font-size: 15px;"/>
                     </VBox>
 
-                    <GridPane fx:id="featuredGrid" hgap="20" vgap="20" alignment="CENTER">
+                    <TilePane fx:id="featuredGrid" hgap="20" vgap="20" alignment="TOP_CENTER" prefColumns="3" prefTileWidth="320" minWidth="0">
                         <padding><Insets top="10" right="20" bottom="30" left="20"/></padding>
-                    </GridPane>
+                    </TilePane>
 
                     <!-- === How It Works Section === -->
                     <VBox alignment="CENTER" spacing="16" styleClass="how-section">
                         <Label text="How It Works" styleClass="section-title"/>
                         <Label text="Simple steps to find your perfect home" styleClass="section-subtitle"/>
-                        <HBox spacing="24" alignment="CENTER">
-                            <VBox alignment="CENTER" spacing="10" styleClass="how-card">
+                        <FlowPane hgap="24" vgap="24" alignment="CENTER">
+                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
                                 <Label text="🔍" styleClass="how-icon"/>
                                 <Label text="Browse Listings" styleClass="how-card-title"/>
                                 <Label text="Search thousands of verified listings that match your needs."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
-                            <VBox alignment="CENTER" spacing="10" styleClass="how-card">
+                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
                                 <Label text="🏡" styleClass="how-icon"/>
                                 <Label text="View Details" styleClass="how-card-title"/>
                                 <Label text="See property details, photos, and amenities instantly."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
-                            <VBox alignment="CENTER" spacing="10" styleClass="how-card">
+                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
                                 <Label text="📝" styleClass="how-icon"/>
                                 <Label text="Book or Contact" styleClass="how-card-title"/>
                                 <Label text="Chat with the owner or schedule a visit — all in one place."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
-                        </HBox>
+                        </FlowPane>
                     </VBox>
 
                     <!-- === CTA Section === -->
                     <HBox alignment="CENTER" spacing="40" styleClass="cta-section">
-                        <VBox alignment="CENTER_LEFT" spacing="12" maxWidth="650">
+                        <VBox alignment="CENTER_LEFT" spacing="12" maxWidth="650" minWidth="0" HBox.hgrow="ALWAYS">
                             <Label text="Join the Future of Renting" styleClass="cta-title"/>
                             <Label text="Whether you're looking for your next home or want to showcase your property to the right tenants — RentNest makes it effortless. Start your journey today."
                                    styleClass="cta-subtitle" wrapText="true"/>
@@ -154,7 +158,7 @@
                             </VBox>
                         </HBox>
 
-                        <Separator prefWidth="900"/>
+                        <Separator/>
                         <HBox alignment="CENTER" style="-fx-background-color: #D3D3D3;">
                             <Label text="© 2025 RentNest — All rights reserved."
                                    style="-fx-text-fill:#591734; -fx-font-size:12px; -fx-padding:10 0 8 0;"/>

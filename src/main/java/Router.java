@@ -265,12 +265,17 @@ public class Router {
        Utilities
        ----------------------------------------------------------- */
     private static void showScene(Parent root, String title) {
-        if (stage == null) stage = new Stage();
+        if (stage == null) {
+            stage = new Stage();
+            WindowManager.configureMain(stage);
+        }
 
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
+        if (stage.getScene() == null) {
+            stage.setScene(new Scene(root));
+        } else {
+            stage.getScene().setRoot(root);
+        }
         stage.setTitle(title);
-        stage.centerOnScreen();
         stage.show();
 
         // Smooth fade-in animation
