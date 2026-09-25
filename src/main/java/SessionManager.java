@@ -1,65 +1,43 @@
-public class SessionManager {
-
-    private static User loggedInUser;
-    private static Runnable postLoginAction;   // ✅ action to run after login
-    private static String lastVisitedPage;     // ✅ remember last visited page (like "browse.fxml")
-
-    private SessionManager() {
-        // prevent instantiation
+/** One process-local session, created only by credential verification. No password is retained. */
+public final class SessionManager {
+    private static volatile String token;
+    private static Runnable postLoginAction;
+    private static String lastVisitedPage;
+    private SessionManager() {}
+    public static synchronized java.util.Optional<User> login(String email, String password, boolean adminOnly) {
+        logout();
+        AuthenticationService auth = new AuthenticationService();
+        java.util.Optional<User> user = adminOnly ? auth.authenticateAdmin(email,password) : auth.authenticate(email,password);
+        if (user.isPresent()) token = SessionTokens.issue(user.get().getId());
+        return user;
     }
-
-    // ✅ Called when user logs in successfully
-    public static void setLoggedInUser(User user) {
-        loggedInUser = user;
-
-        // After login → open stored action if available
-        if (postLoginAction != null) {
-            postLoginAction.run();
-            postLoginAction = null;
-        }
-        // Or if no action → go back to last visited page (like Browse)
-        else if (lastVisitedPage != null) {
-            switch (lastVisitedPage) {
-                case "browse":
-                    Router.goToBrowse();
-                    break;
-                case "homepage":
-                    Router.goToIndex();
-                    break;
-                default:
-                    Router.goToIndex();
-                    break;
-            }
-            lastVisitedPage = null;
-        }
-    }
-
     public static User getLoggedInUser() {
-        return loggedInUser;
+        String current = token;
+        if (current == null) return null;
+        try { return SessionTokens.require(current); }
+        catch (SecurityException expired) {
+            if (current.equals(token)) {
+                token = null;
+                Client.getInstance().disconnect();
+                Client.getInstance().clearListeners();
+            }
+            return null;
+        }
     }
-
-    public static boolean isLoggedIn() {
-        return loggedInUser != null;
+    static String socketToken() {
+        String current = token;
+        SessionTokens.require(current);
+        return current;
     }
-
-    // ✅ Allow controllers to store a “do this after login” task
-    public static void setPostLoginAction(Runnable action) {
-        postLoginAction = action;
+    public static boolean isLoggedIn() { return getLoggedInUser() != null; }
+    public static synchronized void logout() {
+        String previous = token; token = null;
+        Client.getInstance().disconnect();
+        Client.getInstance().clearListeners();
+        postLoginAction = null; lastVisitedPage = null;
+        SessionTokens.revoke(previous);
     }
-
-    // ✅ Remember where the user was (like Browse, PropertyDetails, etc.)
-    public static void setLastVisitedPage(String page) {
-        lastVisitedPage = page;
-    }
-
-    public static String getLastVisitedPage() {
-        return lastVisitedPage;
-    }
-
-    // ✅ Clear everything
-    public static void logout() {
-        loggedInUser = null;
-        postLoginAction = null;
-        lastVisitedPage = null;
-    }
+    public static void setPostLoginAction(Runnable action) { postLoginAction = action; }
+    public static void setLastVisitedPage(String page) { lastVisitedPage = page; }
+    public static String getLastVisitedPage() { return lastVisitedPage; }
 }

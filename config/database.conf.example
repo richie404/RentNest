@@ -1,0 +1,6 @@
+# Copy to database.conf (gitignored), then fill in your existing database settings.
+# This single file is used by RentNest and the Maven Flyway plugin.
+# Supply the JDBC URL and user; password must be present but may be empty locally.
+flyway.url=
+flyway.user=
+flyway.password=

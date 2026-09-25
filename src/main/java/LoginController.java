@@ -12,13 +12,12 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    private final UserDAO userDAO = new UserDAO();
 
     // ✅ Normal Login
     @FXML
     private void handleSubmitLogin() {
         String email = emailField.getText().trim();
-        String pass = passwordField.getText().trim();
+        String pass = passwordField.getText();
 
         if (email.isEmpty() || pass.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Login Failed", "Please fill in both fields.");
@@ -26,28 +25,23 @@ public class LoginController {
         }
 
         try {
-            if (!userDAO.checkCredentials(email, pass)) {
-                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid email or password.");
-                return;
-            }
-
-            Optional<User> u = userDAO.findByEmail(email);
+            Optional<User> u = SessionManager.login(email, pass, false);
             if (u.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Login Failed", "User not found after authentication.");
+                showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid email or password.");
                 return;
             }
 
             User user = u.get();
 
             // ✅ Save the logged-in user globally (using SessionManager)
-            SessionManager.setLoggedInUser(user);
+            passwordField.clear();
 
             // ✅ Route based on role
-            if (user.getRoles().contains("OWNER")) {
+            if (user.getRole() == Role.OWNER) {
                 Router.goToOwnerDashboard();
-            } else if (user.getRoles().contains("RENTER")) {
+            } else if (user.getRole() == Role.RENTER) {
                 Router.goToRenterDashboard();
-            } else if (user.getRoles().contains("ADMIN")) {
+            } else if (user.getRole() == Role.ADMIN) {
                 Router.goToAdminDashboard();
             } else {
                 showAlert(Alert.AlertType.WARNING, "Access Denied", "Unknown user role.");
@@ -104,7 +98,7 @@ public class LoginController {
 
         result.ifPresent(credentials -> {
             String adminEmail = credentials.getKey().trim();
-            String adminPassword = credentials.getValue().trim();
+            String adminPassword = credentials.getValue();
 
             if (adminEmail.isEmpty() || adminPassword.isEmpty()) {
                 showAlert(Alert.AlertType.WARNING, "Login Failed", "Please fill in both fields.");
@@ -112,17 +106,17 @@ public class LoginController {
             }
 
             try {
-                if (!userDAO.checkCredentials(adminEmail, adminPassword)) {
+                Optional<User> userOpt = SessionManager.login(adminEmail, adminPassword, true);
+                if (userOpt.isEmpty()) {
                     showAlert(Alert.AlertType.ERROR, "Access Denied", "Invalid email or password.");
                     return;
                 }
 
-                Optional<User> userOpt = userDAO.findByEmail(adminEmail);
-                if (userOpt.isPresent() && userOpt.get().getRoles().contains("ADMIN")) {
+                if (userOpt.isPresent()) {
                     User admin = userOpt.get();
 
                     // ✅ Store admin session using SessionManager
-                    SessionManager.setLoggedInUser(admin);
+                    password.clear();
 
                     Router.goToAdminDashboard();
                 } else {

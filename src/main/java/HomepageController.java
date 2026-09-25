@@ -36,7 +36,7 @@ public class HomepageController extends BaseController implements Initializable 
     /* -----------------------------------------------------------
        🔹 Dependencies
        ----------------------------------------------------------- */
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -45,7 +45,7 @@ public class HomepageController extends BaseController implements Initializable 
 
         // Load featured listings
         try {
-            List<Listing> featured = listingDAO.findFeatured(6);
+            List<Listing> featured = listingService.findFeatured(6);
             populateGrid(featured);
         } catch (Exception ex) {
             populateGrid(List.of());

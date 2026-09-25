@@ -1,131 +1,24 @@
-import java.security.MessageDigest;
-import java.sql.*;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Handles all user-related database operations.
- */
+import java.util.*;
 public class UserDAO {
-
-    // Check if an email already exists in the users table
-    public boolean emailExists(String email) throws Exception {
-        String sql = "SELECT id FROM users WHERE email = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        }
+    private static final String SELECT="SELECT id,username,email,role,active,status,created_at FROM users ";
+    public List<User> findAll() { return JdbcDAO.query(SELECT+"ORDER BY id DESC",DaoMappers::user); }
+    public Optional<User> findByEmail(String email) { return JdbcDAO.one(SELECT+"WHERE LOWER(TRIM(email))=?",DaoMappers::user,email.trim().toLowerCase(Locale.ROOT)); }
+    public Optional<User> findById(int id) { return JdbcDAO.one(SELECT+"WHERE id=?",DaoMappers::user,id); }
+    public boolean existsByEmail(String email) { return JdbcDAO.one("SELECT id FROM users WHERE LOWER(TRIM(email))=?",r->r.getInt(1),email.trim().toLowerCase(Locale.ROOT)).isPresent(); }
+    public Optional<UserCredentials> findCredentialsByEmail(String email) {
+        List<UserCredentials> matches = JdbcDAO.query("SELECT * FROM users WHERE LOWER(TRIM(email))=?",r->new UserCredentials(DaoMappers.user(r),r.getString("password_hash")),email.trim().toLowerCase(Locale.ROOT));
+        // Fail closed if an unmigrated database contains ambiguous normalized addresses.
+        return matches.size() == 1 ? Optional.of(matches.getFirst()) : Optional.empty();
     }
-    public List<User> getAllUsers() {
-        List<User> list = new ArrayList<>();
-        String sql = "SELECT id, username AS name, email, role AS roles, active FROM users ORDER BY id DESC";
-
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                User u = new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getBoolean("active"),
-                        rs.getString("roles")
-                );
-                list.add(u);
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ [UserDAO] getAllUsers failed: " + e.getMessage());
-        }
-        return list;
+    public boolean replacePasswordHash(int id, String expected, String replacement) {
+        return JdbcDAO.update("UPDATE users SET password_hash=? WHERE id=? AND BINARY password_hash=BINARY ? AND active=1 AND status='ACTIVE'",replacement,id,expected)>0;
     }
-
-    public boolean updateUserStatus(int userId, boolean active) {
-        String sql = "UPDATE users SET active = ? WHERE id = ?";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setBoolean(1, active);
-            stmt.setInt(2, userId);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public int insert(String username, String email, String passwordHash, Role role) {
+        return JdbcDAO.insert("INSERT INTO users (username,email,password_hash,role) VALUES (?,?,?,?)",username,email,passwordHash,role);
     }
-
-
-
-
-    // Register a new user
-    public int register(String username, String email, String password, String role) throws Exception {
-        String hashed = hashPassword(password);
-
-        String sql = "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, username);
-            stmt.setString(2, email);
-            stmt.setString(3, hashed);
-            stmt.setString(4, role.toUpperCase());
-            stmt.executeUpdate();
-
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
-        }
-        throw new Exception("User registration failed.");
+    public boolean updateStatus(int id, UserStatus status) {
+        return JdbcDAO.update("UPDATE users SET active=?,status=? WHERE id=?",status==UserStatus.ACTIVE,status,id)>0;
     }
-
-    // Validate login credentials
-    public boolean checkCredentials(String email, String password) throws Exception {
-        String sql = "SELECT password_hash, active FROM users WHERE email = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    String storedHash = rs.getString("password_hash");
-                    boolean active = rs.getBoolean("active");
-                    return active && storedHash.equals(hashPassword(password));
-                }
-            }
-        }
-        return false;
-    }
-
-    // Retrieve user by email
-    public Optional<User> findByEmail(String email) throws Exception {
-        String sql = "SELECT id, username, email, role, active FROM users WHERE email = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    User user = new User(
-                            rs.getInt("id"),
-                            rs.getString("username"),
-                            rs.getString("email"),
-                            rs.getBoolean("active"),
-                            rs.getString("role")
-                    );
-                    return Optional.of(user);
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
-    // Simple password hashing with SHA-256
-    private String hashPassword(String password) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hashed = md.digest(password.getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashed) sb.append(String.format("%02x", b));
-        return sb.toString();
-    }
+    public boolean updateRole(int id, Role role) { return JdbcDAO.update("UPDATE users SET role=? WHERE id=?",role,id)>0; }
+    public boolean delete(int id) { return JdbcDAO.update("DELETE FROM users WHERE id=?",id)>0; }
 }

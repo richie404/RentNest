@@ -17,7 +17,7 @@ public class PropertyDetailsController extends BaseController {
     @FXML private TextArea descriptionArea;
 
     private int listingId;
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
 
     /* -----------------------------------------------------------
        🔹 Load Listing by ID
@@ -29,7 +29,7 @@ public class PropertyDetailsController extends BaseController {
 
     private void loadListing() {
         try {
-            Optional<Listing> opt = listingDAO.findById(listingId);
+            Optional<Listing> opt = listingService.findById(listingId);
             if (opt.isEmpty()) {
                 error("Not Found", "This property no longer exists.");
                 Router.goToBrowse();
@@ -72,7 +72,7 @@ public class PropertyDetailsController extends BaseController {
             Parent root = loader.load();
 
             BookPropertyController controller = loader.getController();
-            Optional<Listing> optListing = listingDAO.findById(listingId);
+            Optional<Listing> optListing = listingService.findById(listingId);
             optListing.ifPresent(controller::setListing);
 
             Stage stage = new Stage();
@@ -92,7 +92,10 @@ public class PropertyDetailsController extends BaseController {
        ----------------------------------------------------------- */
     @FXML
     private void handleFavorite() {
-        info("Favorites", "Added to Favorites!");
+        try {
+            boolean added = new FavoriteService().add(listingId);
+            info("Favorites", added ? "Added to Favorites!" : "Already in Favorites.");
+        } catch (Exception e) { error("Favorites", e.getMessage()); }
     }
 
     /* -----------------------------------------------------------
@@ -116,7 +119,7 @@ public class PropertyDetailsController extends BaseController {
             }
 
             int senderId = SessionManager.getLoggedInUser().getId();
-            int receiverId = listingDAO.findOwnerIdByListing(listingId);
+            int receiverId = listingService.findOwnerIdByListing(listingId).orElseThrow(() -> new IllegalStateException("Listing has no owner"));
             String propertyTitle = titleLabel.getText();
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChatWindow.fxml"));

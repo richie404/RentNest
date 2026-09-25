@@ -21,7 +21,7 @@ public class BrowseController extends BaseController implements Initializable {
     @FXML private RadioButton bedAny, bed1, bed2, bed3;
     @FXML private CheckBox amenWifi, amenParking, amenPets, amenLift, amenSecurity;
 
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -58,8 +58,8 @@ public class BrowseController extends BaseController implements Initializable {
     private void doSearch(String q) {
         try {
             List<Listing> list = (q == null || q.isBlank())
-                    ? listingDAO.findAll()
-                    : listingDAO.search(q);
+                    ? listingService.findAll()
+                    : listingService.search(q);
             populate(list);
         } catch (Exception ex) {
             error("Search failed", ex.getMessage());
@@ -73,7 +73,7 @@ public class BrowseController extends BaseController implements Initializable {
     private void handleApplyFilters() {
         try {
             // TODO: Replace with a real filtered query in ListingDAO
-            List<Listing> list = listingDAO.findAll();
+            List<Listing> list = listingService.findAll();
             populate(list);
         } catch (Exception ex) {
             error("Filter failed", ex.getMessage());
@@ -102,7 +102,7 @@ public class BrowseController extends BaseController implements Initializable {
        ------------------------------------------------------- */
     private void refreshAll() {
         try {
-            populate(listingDAO.findAll());
+            populate(listingService.findAll());
         } catch (Exception ex) {
             error("Load failed", ex.getMessage());
         }

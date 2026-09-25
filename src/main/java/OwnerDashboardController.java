@@ -17,8 +17,8 @@ public class OwnerDashboardController extends BaseController {
     // 🆕 Added: link to Bookings tab controller (from FXML include)
     @FXML private OwnerBookingsController bookingsTabController;
 
-    private final ListingDAO listingDAO = new ListingDAO();
-    private final MessageDAO messageDAO = new MessageDAO();
+    private final ListingService listingService = new ListingService();
+    private final MessageService messageService = new MessageService();
     private int ownerId = 0;
 
     /* -----------------------------------------------------------
@@ -26,7 +26,7 @@ public class OwnerDashboardController extends BaseController {
        ----------------------------------------------------------- */
     @FXML
     private void initialize() {
-        if (!requireRole("OWNER")) return;
+        if (!requireRole(Role.OWNER)) return;
 
         User current = currentUser();
         ownerId = current.getId();
@@ -94,8 +94,8 @@ public class OwnerDashboardController extends BaseController {
     private void refresh() {
         try {
             List<Listing> listings = (ownerId == 0)
-                    ? listingDAO.findAll()
-                    : listingDAO.findByOwner(ownerId);
+                    ? listingService.findAll()
+                    : listingService.findByOwner(ownerId);
             propertyList.setItems(FXCollections.observableArrayList(listings));
         } catch (Exception ex) {
             error("Load failed", ex.getMessage());
@@ -105,7 +105,7 @@ public class OwnerDashboardController extends BaseController {
     private void loadMessages() {
         try {
             if (ownerId == 0) return;
-            List<Message> messages = messageDAO.getMessagesForOwner(ownerId);
+            List<Message> messages = messageService.findByReceiver(ownerId);
             messageList.setItems(FXCollections.observableArrayList(messages));
         } catch (Exception e) {
             error("Message Load Failed", e.getMessage());

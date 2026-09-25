@@ -5,37 +5,23 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.Base64;
 import java.util.Properties;
-import java.util.logging.Logger;
+
 
 /** Standalone integration check against an isolated, disposable database only. */
 public class MessagingIntegrationCheck {
-    private static final String URL = "jdbc:mysql://127.0.0.1:3307/rentnest_messaging_test?useSSL=false&serverTimezone=UTC";
     private static Connection db;
 
     public static void main(String[] args) throws Exception {
-        // Redirect the application's hardcoded DBUtil URL in this test JVM only.
-        Driver mysql = new com.mysql.cj.jdbc.Driver();
-        var drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) DriverManager.deregisterDriver(drivers.nextElement());
-        DriverManager.registerDriver(new Driver() {
-            public Connection connect(String url, Properties info) throws SQLException {
-                return acceptsURL(url) ? mysql.connect(URL, info) : null;
-            }
-            public boolean acceptsURL(String url) { return url.startsWith("jdbc:mysql:"); }
-            public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) { return new DriverPropertyInfo[0]; }
-            public int getMajorVersion() { return 1; }
-            public int getMinorVersion() { return 0; }
-            public boolean jdbcCompliant() { return false; }
-            public Logger getParentLogger() { return Logger.getGlobal(); }
-        });
-        try (Connection connection = DriverManager.getConnection(URL, "root", "")) {
+        try (Connection connection = Database.getConnection()) {
+            if (!"rentnest_messaging_test".equals(connection.getCatalog()))
+                throw new IllegalStateException("Configure a disposable rentnest_messaging_test database first");
             db = connection;
             if (args.length == 1 && args[0].equals("restart")) {
                 start(() -> Server.main(new String[0]));
                 try (Peer ignored = connect(5000)) {
-                    check(new MessageDAO().getConversation(1, 3, 2).stream()
+                    check(new MessageDAO().findConversation(1, 3, 2).stream()
                             .anyMatch(m -> m.getMessageText().equals("integration send")), "History after server restart");
-                    check(new MessageDAO().getConversation(null, 2, 3).stream()
+                    check(new MessageDAO().findConversation(null, 2, 3).stream()
                             .anyMatch(m -> m.getMessageText().equals("migration null") && m.getTimestamp() == null), "Migrated nullable timestamp loads");
                 }
                 System.out.println("PASS: persisted history after server restart in a new JVM");
@@ -45,11 +31,11 @@ public class MessagingIntegrationCheck {
                     "Fresh schema must not contain the legacy table");
             long initial = count("SELECT COUNT(*) FROM messages");
             MessageDAO dao = new MessageDAO();
-            var oldHistory = dao.getConversation(1, 3, 2);
+            var oldHistory = dao.findConversation(1, 3, 2);
             start(() -> Server.main(new String[0]));
             try (Peer sender = connect(5000); Peer receiver = connect(5000)) {
-                sender.send("REGISTER 3");
-                receiver.send("REGISTER 2");
+                sender.send("REGISTER " + SessionTokens.issue(3));
+                receiver.send("REGISTER " + SessionTokens.issue(2));
                 Thread.sleep(150);
                 String send = line(1, 3, 2, "integration send");
                 sender.send(send);
@@ -57,8 +43,8 @@ public class MessagingIntegrationCheck {
                 check(count("SELECT COUNT(*) FROM messages") == initial + 1, "Single persistence operation");
                 receiver.expectSilence();
                 sender.expectSilence(); // UI already appends the outgoing message.
-                check(dao.getConversation(1, 3, 2).size() == oldHistory.size() + 1, "Old and new history");
-                check(dao.getConversation(2, 3, 2).stream().noneMatch(m -> m.getMessageText().equals("integration send")), "Listing isolation");
+                check(dao.findConversation(1, 3, 2).size() == oldHistory.size() + 1, "Old and new history");
+                check(dao.findConversation(2, 3, 2).stream().noneMatch(m -> m.getMessageText().equals("integration send")), "Listing isolation");
                 String reply = line(1, 2, 3, "integration reply");
                 receiver.send(reply);
                 check(reply.equals(sender.read()), "Reply delivered");
@@ -68,12 +54,14 @@ public class MessagingIntegrationCheck {
                 receiver.expectSilence();
                 check(count("SELECT COUNT(*) FROM messages") == initial + 2, "Invalid sends are not persisted or forwarded");
             }
-            check(new MessageDAO().getConversation(1, 3, 2).size() == oldHistory.size() + 2, "History survives reconnect/new DAO");
+            check(new MessageDAO().findConversation(1, 3, 2).size() == oldHistory.size() + 2, "History survives reconnect/new DAO");
             Message general = new Message(null, 3, 2, "general chat");
-            dao.addMessage(general);
-            check(general.getId() > 0 && dao.getConversation(null, 3, 2).stream().anyMatch(m -> m.getId() == general.getId()), "Generated ID and null listing history");
+            new MessageService().sendAuthenticated(SessionTokens.issue(3),general);
+            check(general.getId() > 0 && dao.findConversation(null, 3, 2).stream().anyMatch(m -> m.getId() == general.getId()), "Generated ID and null listing history");
             start(() -> ChatServer.main(new String[0]));
             try (Peer sender = connect(5050); Peer receiver = connect(5050)) {
+                sender.send("REGISTER " + SessionTokens.issue(3));
+                receiver.send("REGISTER " + SessionTokens.issue(2));
                 Thread.sleep(150);
                 sender.send("1|3|2|legacy transport");
                 check(receiver.read().equals("1|3|2|legacy transport"), "Legacy transport still forwards");

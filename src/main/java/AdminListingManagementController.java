@@ -13,32 +13,34 @@ public class AdminListingManagementController {
     @FXML private TableColumn<Listing, String> colStatus;
     @FXML private Button btnApprove, btnReject, btnRefresh;
 
-    private final AdminDAO adminDAO = new AdminDAO();
+    private final AdminService adminService = new AdminService();
 
     @FXML
     private void initialize() {
         colTitle.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getTitle()));
         colLocation.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getLocation()));
         colPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleDoubleProperty(data.getValue().getPricePerMonth()).asObject());
-        colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleIntegerProperty(data.getValue().getOwnerId()).asObject());
+        colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getOwnerId()));
         colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getStatus()));
         loadListings();
     }
 
     private void loadListings() {
-        List<Listing> listings = adminDAO.getAllListings();
+        List<Listing> listings = adminService.getAllListings();
         listingTable.setItems(FXCollections.observableArrayList(listings));
     }
 
     @FXML
     private void handleApprove() {
-        Listing selected = listingTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Select a listing first"); return; }
+        try {
+            Listing selected = listingTable.getSelectionModel().getSelectedItem();
+            if (selected == null) { showAlert("Select a listing first"); return; }
 
-        if (adminDAO.updateListingStatus(selected.getId(), "APPROVED")) {
-            showAlert("✅ Listing Approved!");
-            loadListings();
-        }
+            if (adminService.updateListingStatus(selected.getId(), ApprovalStatus.APPROVED.name())) {
+                showAlert("✅ Listing Approved!");
+                loadListings();
+            }
+        } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML
@@ -49,13 +51,15 @@ public class AdminListingManagementController {
 
     @FXML
     private void handleReject() {
-        Listing selected = listingTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Select a listing first"); return; }
+        try {
+            Listing selected = listingTable.getSelectionModel().getSelectedItem();
+            if (selected == null) { showAlert("Select a listing first"); return; }
 
-        if (adminDAO.updateListingStatus(selected.getId(), "REJECTED")) {
-            showAlert("❌ Listing Rejected!");
-            loadListings();
-        }
+            if (adminService.updateListingStatus(selected.getId(), ApprovalStatus.REJECTED.name())) {
+                showAlert("❌ Listing Rejected!");
+                loadListings();
+            }
+        } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML

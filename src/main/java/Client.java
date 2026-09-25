@@ -15,7 +15,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * 💡 Usage (Option A — connect after login):
  *
- *     User current = UserStore.getCurrentUser();
+ *     User current = SessionManager.getLoggedInUser();
  *     Client.getInstance().connect("192.168.1.100", 5000, current.getId());
  *
  * 💬 In MessageController:
@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *     });
  *
  * Protocol:
- *   REGISTER <userId>
+ *   REGISTER <opaque session token>
  *   MSG\t<listingId or -1>\t<senderId>\t<receiverId>\t<base64(messageText)>
  */
 public class Client {
@@ -70,16 +70,20 @@ public class Client {
         }
 
         try {
+            String token = SessionManager.socketToken();
+            if (SessionTokens.require(token).getId() != userId) throw new SecurityException("Invalid chat identity");
             socket = new Socket(serverIp, port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in  = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             myUserId = userId;
 
             // Register this user with server
-            out.println("REGISTER " + myUserId);
+            out.println("REGISTER " + token);
 
             // Background listener for incoming messages
-            Thread reader = new Thread(this::readLoop, "RentNest-Chat-Reader");
+            Socket connectedSocket = socket;
+            BufferedReader connectedInput = in;
+            Thread reader = new Thread(() -> readLoop(connectedSocket,connectedInput), "RentNest-Chat-Reader");
             reader.setDaemon(true);
             reader.start();
 
@@ -129,6 +133,7 @@ public class Client {
     public void addMessageListener(MessageListener l) {
         if (l != null) listeners.add(l);
     }
+    public void clearListeners() { listeners.clear(); }
 
     /** Remove a message listener. */
     public void removeMessageListener(MessageListener l) {
@@ -140,10 +145,11 @@ public class Client {
     /**
      * Continuously reads messages from the server and dispatches them to listeners.
      */
-    private void readLoop() {
+    private void readLoop(Socket connectedSocket, BufferedReader connectedInput) {
         try {
             String line;
-            while ((line = in.readLine()) != null) {
+            while ((line = connectedInput.readLine()) != null) {
+                synchronized (this) { if (socket != connectedSocket) return; }
                 if (!line.startsWith("MSG\t")) continue;
 
                 String[] f = line.split("\t", 5);
@@ -177,7 +183,7 @@ public class Client {
         } catch (IOException e) {
             System.out.println("⚠️ Connection lost: " + e.getMessage());
         } finally {
-            disconnect();
+            synchronized (this) { if (socket == connectedSocket) disconnect(); }
         }
     }
 }

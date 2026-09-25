@@ -1,4 +1,4 @@
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class AdminAction {
     private int id;
@@ -6,7 +6,7 @@ public class AdminAction {
     private String actionType;
     private int targetId;
     private String details;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     public AdminAction() {}
 
@@ -23,7 +23,7 @@ public class AdminAction {
     public String getActionType() { return actionType; }
     public int getTargetId() { return targetId; }
     public String getDetails() { return details; }
-    public Timestamp getCreatedAt() { return createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     // --- Setters ---
     public void setId(int id) { this.id = id; }
@@ -31,7 +31,7 @@ public class AdminAction {
     public void setActionType(String actionType) { this.actionType = actionType; }
     public void setTargetId(int targetId) { this.targetId = targetId; }
     public void setDetails(String details) { this.details = details; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     @Override
     public String toString() {

@@ -27,14 +27,14 @@ public abstract class BaseController {
      * If not logged in → redirects to Login.
      * If wrong role → redirects to Homepage.
      */
-    protected boolean requireRole(String role) {
+    protected boolean requireRole(Role role) {
         if (!SessionManager.isLoggedIn()) {
             Router.goToLogin();
             return false;
         }
 
         User user = SessionManager.getLoggedInUser();
-        if (user == null || !user.getRoles().contains(role)) {
+        if (user == null || user.getRole() != role) {
             Router.goToHomepage();
             return false;
         }

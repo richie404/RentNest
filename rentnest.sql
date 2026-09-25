@@ -10,6 +10,8 @@ USE `rentnest`;
 START TRANSACTION;
 
 CREATE TABLE `users` (
+  CONSTRAINT `chk_users_account_state` CHECK (active IN (0,1) AND ((active=1 AND status='ACTIVE') OR (active=0 AND status='BANNED'))),
+  CONSTRAINT `chk_users_role` CHECK (role <> ''),
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
@@ -40,6 +42,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `create
 ALTER TABLE `users` AUTO_INCREMENT = 14;
 
 CREATE TABLE `listings` (
+  CONSTRAINT `chk_listings_approval_value` CHECK (approval_status <> ''),
+  CONSTRAINT `chk_listings_type_value` CHECK (listing_type IS NULL OR listing_type <> ''),
   `id` INT NOT NULL AUTO_INCREMENT,
   `owner_id` INT DEFAULT NULL,
   `title` VARCHAR(120) NOT NULL,
@@ -123,6 +127,8 @@ VALUES
 ALTER TABLE `listings` AUTO_INCREMENT = 27;
 
 CREATE TABLE `listing_photos` (
+  `primary_listing_id` INT GENERATED ALWAYS AS (CASE WHEN is_primary=1 THEN listing_id ELSE NULL END) VIRTUAL,
+  UNIQUE KEY `uq_listing_photos_one_primary` (`primary_listing_id`),
   `id` INT NOT NULL AUTO_INCREMENT,
   `listing_id` INT NOT NULL,
   `url` VARCHAR(500) NOT NULL,
@@ -205,20 +211,23 @@ CREATE TABLE `listing_amenities` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 CREATE TABLE `bookings` (
+  CONSTRAINT `chk_bookings_amount` CHECK (total_amount >= 0),
+  CONSTRAINT `chk_bookings_dates` CHECK (start_date >= '1000-01-01' AND end_date >= start_date),
+  CONSTRAINT `chk_bookings_status_value` CHECK (status <> ''),
   `id` INT NOT NULL AUTO_INCREMENT,
   `listing_id` INT NOT NULL,
   `renter_id` INT NOT NULL,
   `owner_id` INT DEFAULT NULL,
-  `start_date` DATE DEFAULT NULL,
-  `end_date` DATE DEFAULT NULL,
-  `total_amount` DECIMAL(10,2) DEFAULT 0.00,
-  `status` ENUM('PENDING','PENDING_OWNER_APPROVAL','CONFIRMED','CANCELLED','APPROVED','REJECTED') DEFAULT 'PENDING',
+  `start_date` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `total_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `status` ENUM('PENDING','PENDING_OWNER_APPROVAL','CONFIRMED','CANCELLED','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
-  KEY `idx_bookings_listing` (`listing_id`),
-  KEY `idx_bookings_renter` (`renter_id`),
-  KEY `idx_bookings_owner` (`owner_id`),
+  KEY `idx_bookings_availability` (`listing_id`, `status`, `start_date`, `end_date`),
+  KEY `idx_bookings_renter_created` (`renter_id`, `created_at`),
+  KEY `idx_bookings_owner_created` (`owner_id`, `created_at`),
 
   CONSTRAINT `fk_bookings_listing`
     FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`)
@@ -270,17 +279,18 @@ INSERT INTO `favorites` (`id`, `user_id`, `listing_id`, `created_at`) VALUES
 ALTER TABLE `favorites` AUTO_INCREMENT = 4;
 
 CREATE TABLE `inquiries` (
+  CONSTRAINT `chk_inquiries_status_value` CHECK (status <> ''),
   `id` INT NOT NULL AUTO_INCREMENT,
   `listing_id` INT NOT NULL,
   `renter_id` INT NOT NULL,
   `message` TEXT DEFAULT NULL,
   `contact` VARCHAR(150) DEFAULT NULL,
-  `status` ENUM('Pending','Replied','Closed') DEFAULT 'Pending',
+  `status` ENUM('Pending','Replied','Closed') NOT NULL DEFAULT 'Pending',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
-  KEY `idx_inquiries_listing` (`listing_id`),
-  KEY `idx_inquiries_renter` (`renter_id`),
+  KEY `idx_inquiries_listing_status` (`listing_id`, `status`),
+  KEY `idx_inquiries_renter_created` (`renter_id`, `created_at`),
 
   CONSTRAINT `fk_inquiries_listing`
     FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`)
@@ -300,8 +310,8 @@ CREATE TABLE `messages` (
   `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
   PRIMARY KEY (`id`),
-  KEY `idx_messages_receiver` (`receiver_id`),
-  KEY `idx_messages_sender_receiver` (`sender_id`, `receiver_id`),
+  KEY `idx_messages_receiver_time` (`receiver_id`, `timestamp`),
+  KEY `idx_messages_conversation` (`sender_id`, `receiver_id`, `listing_id`, `timestamp`),
   KEY `idx_messages_listing` (`listing_id`),
 
   CONSTRAINT `fk_messages_listing`
@@ -347,6 +357,7 @@ INSERT INTO `messages` (`id`, `listing_id`, `sender_id`, `receiver_id`, `message
 ALTER TABLE `messages` AUTO_INCREMENT = 26;
 
 CREATE TABLE `payments` (
+  CONSTRAINT `chk_payments_amount` CHECK (amount >= 0),
   `id` INT NOT NULL AUTO_INCREMENT,
   `booking_id` INT NOT NULL,
   `amount` DOUBLE NOT NULL,

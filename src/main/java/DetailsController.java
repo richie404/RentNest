@@ -12,7 +12,7 @@ public class DetailsController extends BaseController {
     @FXML private ImageView coverImage;
     @FXML private WebView mapView; // optional placeholder for Google Maps later
 
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
     private int listingId;
 
     public void setListingId(int id) {
@@ -37,7 +37,7 @@ public class DetailsController extends BaseController {
     }
 
     private Optional<Listing> findById(int id) {
-        return listingDAO.findAll().stream().filter(x -> x.getId() == id).findFirst();
+        return listingService.findById(id);
     }
 
     @FXML private void handleBack() { Router.goToBrowse(); }

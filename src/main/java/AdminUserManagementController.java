@@ -14,7 +14,7 @@ public class AdminUserManagementController {
     @FXML private Button btnBan, btnUnban, btnRefresh, btnDetails;
     @FXML private TableColumn<User, Boolean> colActive;
 
-    private final UserDAO userDAO = new UserDAO();
+    private final AdminService adminService = new AdminService();
 
     @FXML
     private void initialize() {
@@ -22,13 +22,13 @@ public class AdminUserManagementController {
         colName.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getName()));
         colEmail.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getEmail()));
         colRoles.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getRoles()));
-        colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().isActive() ? "ACTIVE" : "BANNED"));
+        colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getStatus().name()));
         loadUsers();
     }
 
     private void loadUsers() {
         try {
-            List<User> users = userDAO.getAllUsers(); // fetch all
+            List<User> users = adminService.getAllUsers(); // fetch all
             userTable.setItems(FXCollections.observableArrayList(users));
         } catch (Exception e) {
             e.printStackTrace();
@@ -38,28 +38,28 @@ public class AdminUserManagementController {
 
     @FXML
     private void handleBanUser() {
-        User selected = userTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("No Selection", "Select a user to ban."); return; }
+        try {
+            User selected = userTable.getSelectionModel().getSelectedItem();
+            if (selected == null) { showAlert("No Selection", "Select a user to ban."); return; }
 
-        if (!selected.isActive()) { showAlert("Notice", "User is already banned."); return; }
-
-        if (userDAO.updateUserStatus(selected.getId(), false)) {
-            showAlert("✅ Success", "User banned successfully!");
-            loadUsers();
-        } else showAlert("Error", "Failed to ban user.");
+            if (adminService.banUser(selected.getId())) {
+                showAlert("✅ Success", "User banned successfully!");
+                loadUsers();
+            } else showAlert("Error", "Failed to ban user.");
+        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
     }
 
     @FXML
     private void handleUnbanUser() {
-        User selected = userTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("No Selection", "Select a user to unban."); return; }
+        try {
+            User selected = userTable.getSelectionModel().getSelectedItem();
+            if (selected == null) { showAlert("No Selection", "Select a user to unban."); return; }
 
-        if (selected.isActive()) { showAlert("Notice", "User already active."); return; }
-
-        if (userDAO.updateUserStatus(selected.getId(), true)) {
-            showAlert("✅ Success", "User unbanned successfully!");
-            loadUsers();
-        } else showAlert("Error", "Failed to unban user.");
+            if (adminService.unbanUser(selected.getId())) {
+                showAlert("✅ Success", "User unbanned successfully!");
+                loadUsers();
+            } else showAlert("Error", "Failed to unban user.");
+        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
     }
     @FXML
     private void handleViewDetails() {

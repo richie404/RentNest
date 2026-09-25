@@ -15,8 +15,8 @@ public class RenterDashboardController extends BaseController {
     @FXML private Button viewChatButton;
     @FXML private RenterBookingsController renterBookingsController;
 
-    private final ListingDAO listingDAO = new ListingDAO();
-    private final MessageDAO messageDAO = new MessageDAO();
+    private final ListingService listingService = new ListingService();
+    private final MessageService messageService = new MessageService();
     private int renterId;
 
     /* -----------------------------------------------------------
@@ -24,7 +24,7 @@ public class RenterDashboardController extends BaseController {
        ----------------------------------------------------------- */
     @FXML
     public void initialize() {
-        if (!requireRole("RENTER")) return;
+        if (!requireRole(Role.RENTER)) return;
 
         User user = currentUser();
         if (user != null) {
@@ -77,7 +77,7 @@ public class RenterDashboardController extends BaseController {
        ----------------------------------------------------------- */
     private void loadFeatured() {
         try {
-            List<Listing> featured = listingDAO.findFeatured(6);
+            List<Listing> featured = listingService.findFeatured(6);
             favoritesList.setItems(FXCollections.observableArrayList(featured));
         } catch (Exception ex) {
             error("Failed to load listings", ex.getMessage());
@@ -89,7 +89,7 @@ public class RenterDashboardController extends BaseController {
        ----------------------------------------------------------- */
     private void loadMessages() {
         try {
-            List<Message> msgs = messageDAO.getMessagesForUser(renterId);
+            List<Message> msgs = messageService.findByUser(renterId);
             messageList.setItems(FXCollections.observableArrayList(msgs));
         } catch (Exception e) {
             error("Failed to load messages", e.getMessage());
@@ -156,7 +156,7 @@ public class RenterDashboardController extends BaseController {
     }
     @FXML
     private void handleMyBookings() {
-        int renterId = UserStore.getCurrentUserId(); // ✅ use your UserStore
+        int renterId = (SessionManager.isLoggedIn() ? SessionManager.getLoggedInUser().getId() : -1); // Current authenticated session
         if (renterId == -1) {
             System.out.println("⚠️ No renter logged in");
             return;

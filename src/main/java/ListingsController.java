@@ -13,7 +13,7 @@ public class ListingsController extends BaseController {
     @FXML private TableColumn<Listing, Number> colPrice;
     @FXML private TableColumn<Listing, Number> colSize;
 
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
     private int ownerId;
 
     public void setOwnerId(int ownerId) {
@@ -34,8 +34,8 @@ public class ListingsController extends BaseController {
     private void refresh() {
         try {
             List<Listing> listings = (ownerId > 0)
-                    ? listingDAO.findByOwner(ownerId)
-                    : listingDAO.findAll();
+                    ? listingService.findByOwner(ownerId)
+                    : listingService.findAll();
 
             ObservableList<Listing> data = FXCollections.observableArrayList(listings);
             table.setItems(data);
@@ -68,7 +68,7 @@ public class ListingsController extends BaseController {
         confirm.setContentText(selected.getTitle());
 
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            boolean ok = listingDAO.delete(selected.getId(), ownerId);
+            boolean ok = listingService.delete(selected.getId(), ownerId);
             if (ok) {
                 info("Deleted", "Property deleted successfully.");
                 refresh();

@@ -15,7 +15,7 @@ public class AddListingController extends BaseController {
     @FXML private CheckBox bachelorCheck;
     @FXML private CheckBox familyCheck;
 
-    private final ListingDAO listingDAO = new ListingDAO();
+    private final ListingService listingService = new ListingService();
     private int ownerId = 0; // ✅ Populated via Router or SessionManager
 
     /* -----------------------------------------------------------
@@ -25,7 +25,7 @@ public class AddListingController extends BaseController {
     private void initialize() {
         if (typeComboBox != null && typeComboBox.getItems().isEmpty()) {
             typeComboBox.getItems().addAll(
-                    "SINGLE_ROOM", "SEAT", "ROOMS", "FLAT", "PARKING", "OFFICE", "STOREHOUSE"
+                    java.util.Arrays.stream(ListingType.values()).map(Enum::name).toList()
             );
         }
 
@@ -51,28 +51,21 @@ public class AddListingController extends BaseController {
     @FXML
     private void handleSave() {
         try {
-            // ✅ Validation
-            if (titleField.getText().trim().isEmpty() || locationField.getText().trim().isEmpty()) {
-                warn("Missing Fields", "Please fill out title and location.");
-                return;
-            }
-
             // ✅ Build listing object
             Listing listing = new Listing()
                     .setTitle(titleField.getText().trim())
                     .setListingType(typeComboBox.getValue())
                     .setLocation(locationField.getText().trim())
                     .setDescription(descriptionArea.getText().trim())
-                    .setPricePerMonth(Double.parseDouble(priceField.getText().trim()))
-                    .setDeposit(depositField.getText().isBlank() ? 0.0 : Double.parseDouble(depositField.getText().trim()))
-                    .setSizeSqft(sizeField.getText().isBlank() ? null : Integer.parseInt(sizeField.getText().trim()))
+                    .setPriceAmount(new java.math.BigDecimal(priceField.getText().trim()))
+                    .setDepositAmount(depositField.getText().isBlank() ? java.math.BigDecimal.ZERO : new java.math.BigDecimal(depositField.getText().trim()))
+                    .setSizeSqft(sizeField.getText().isBlank() ? null : Long.parseLong(sizeField.getText().trim()))
                     .setFurnished(furnishedCheck.isSelected())
                     .setBachelorAllowed(bachelorCheck.isSelected())
                     .setFamilyAllowed(familyCheck.isSelected())
-                    .setOwnerId(ownerId)
                     .setImageUrl(imageUrlField == null ? null : imageUrlField.getText().trim());
 
-            int newId = listingDAO.add(listing);
+            int newId = listingService.insert(listing);
 
             info("✅ Listing Added", "Your property has been successfully saved!\nListing ID: " + newId);
 

@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * ------------------------
  * Listens for incoming clients over LAN (default port: 5000).
  * Each client sends:
- *   REGISTER <userId>
+ *   REGISTER <opaque session token>
  *   MSG\t<listingId or -1>\t<senderId>\t<receiverId>\t<base64(messageText)>
  *
  * The server:
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Requirements:
  *   - Message.java
  *   - MessageDAO.java
- *   - DatabaseConnection.java (used by MessageDAO)
+ *   - Database.java (pooled provider used by MessageDAO)
  */
 public class Server {
 
@@ -54,7 +54,7 @@ public class Server {
         private final Socket socket;
         private PrintWriter out;
         private int userId = -1;
-        private final MessageDAO messageDAO = new MessageDAO();
+        private String sessionToken;
 
         ClientHandler(Socket socket) {
             this.socket = socket;
@@ -66,24 +66,27 @@ public class Server {
             System.out.println("🔌 New connection from " + remote);
 
             try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                socket.setSoTimeout(10000);
                 out = new PrintWriter(socket.getOutputStream(), true);
 
                 // Step 1: Expect a registration line ("REGISTER <userId>")
                 String reg = in.readLine();
-                if (reg == null || !reg.startsWith("REGISTER")) {
+                if (reg == null || !reg.startsWith("REGISTER ")) {
                     System.out.println("⚠️ Invalid handshake from " + remote);
                     close();
                     return;
                 }
 
                 String[] parts = reg.trim().split("\\s+");
-                if (parts.length < 2) {
+                if (parts.length != 2) {
                     System.out.println("⚠️ Missing userId during handshake from " + remote);
                     close();
                     return;
                 }
 
-                userId = Integer.parseInt(parts[1]);
+                sessionToken = parts[1];
+                userId = SessionTokens.require(sessionToken).getId();
+                socket.setSoTimeout(0);
                 CLIENTS.put(userId, this);
                 System.out.println("✅ Registered user " + userId + " (" + remote + ")");
 
@@ -112,7 +115,7 @@ public class Server {
                     msg.setMessageText(messageText);
 
                     try {
-                        messageDAO.addMessage(msg);
+                        new MessageService().sendAuthenticated(sessionToken,msg);
                     } catch (Exception dbEx) {
                         System.err.println("❌ Database insert failed: " + dbEx.getMessage());
                         dbEx.printStackTrace();
@@ -125,9 +128,6 @@ public class Server {
                         receiver.send(line);
                     }
 
-                    System.out.println("📨 " + senderId + " → " + receiverId +
-                            " | listing=" + (listingId == null ? "none" : listingId) +
-                            " | " + messageText);
                 }
 
             } catch (Exception e) {
@@ -141,6 +141,8 @@ public class Server {
          * Sends a message line to this client.
          */
         private void send(String line) {
+            try { SessionTokens.require(sessionToken); }
+            catch (RuntimeException denied) { close(); return; }
             if (out != null) out.println(line);
         }
 
@@ -149,7 +151,7 @@ public class Server {
          */
         private void close() {
             if (userId != -1) {
-                CLIENTS.remove(userId);
+                CLIENTS.remove(userId,this);
                 System.out.println("🔌 Disconnected user " + userId);
             }
             try { socket.close(); } catch (IOException ignored) {}

@@ -1,6 +1,5 @@
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import java.sql.Date;
 import java.time.LocalDate;
 
 public class BookPropertyController {
@@ -12,7 +11,7 @@ public class BookPropertyController {
     @FXML private TextArea noteField;
 
     private Listing listing;
-    private final BookingDAO bookingDAO = new BookingDAO();
+    private final BookingService bookingService = new BookingService();
 
     /* -----------------------------------------------------------
        🔹 Confirm Booking
@@ -37,31 +36,12 @@ public class BookPropertyController {
                 return;
             }
 
-            int renterId = SessionManager.getLoggedInUser().getId();
-            int ownerId = listing.getOwnerId();
-            Date start = Date.valueOf(startDate);
-            Date end = Date.valueOf(startDate.plusMonths(1));
-
-            if (!bookingDAO.isPropertyAvailable(listing.getId(), start, end)) {
-                showAlert("Unavailable", "This property is already booked for the selected period.");
-                return;
-            }
-
-            Booking booking = new Booking();
-            booking.setListingId(listing.getId());
-            booking.setRenterId(renterId);
-            booking.setOwnerId(ownerId);
-            booking.setStartDate(start);
-            booking.setEndDate(end);
-            booking.setTotalAmount(listing.getPricePerMonth());
-            booking.setStatus("PENDING_OWNER_APPROVAL");
-
-            if (bookingDAO.createBooking(booking)) {
+            if (bookingService.requestMonth(listing.getId(), startDate)) {
                 showAlert("Booking Confirmed",
                         "Your booking request has been sent to the property owner for approval.");
                 Router.goToDashboard();
             } else {
-                showAlert("Error", "Failed to create booking. Please try again.");
+                showAlert("Unavailable", "This property is already booked for the selected period.");
             }
         } catch (Exception e) {
             e.printStackTrace();

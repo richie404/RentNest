@@ -12,7 +12,7 @@ public class AdminDashboardController {
     @FXML private StackPane contentArea;
 
     // 🔹 Optional (only used by showAllListings)
-    private final AdminDAO adminDAO = new AdminDAO();
+    private final AdminService adminService = new AdminService();
 
     // 🔹 Temporary reference (only used if you display listings directly)
     @FXML private TableView<Listing> listingTable;
@@ -56,7 +56,7 @@ public class AdminDashboardController {
        ----------------------------------------------------------- */
     @FXML
     private void showAllListings() {
-        List<Listing> listings = adminDAO.getAllListings();
+        List<Listing> listings = adminService.getAllListings();
         listingTable.setItems(FXCollections.observableArrayList(listings));
     }
 

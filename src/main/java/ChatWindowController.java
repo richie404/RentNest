@@ -29,7 +29,7 @@ public class ChatWindowController {
     private int senderId;    // current user
     private int receiverId;
 
-    private final MessageDAO messageDAO = new MessageDAO();
+    private final MessageService messageService = new MessageService();
 
     // called by PropertyDetails / Dashboards
     public void initChat(int listingId, int senderId, int receiverId, String propertyTitle) {
@@ -49,7 +49,7 @@ public class ChatWindowController {
 
     private void loadHistory() {
         try {
-            List<Message> history = messageDAO.getConversation(listingId, senderId, receiverId);
+            List<Message> history = messageService.findConversation(listingId, senderId, receiverId);
             messages.getChildren().clear();
             for (Message m : history) {
                 appendBubble(m.getMessageText(),
@@ -77,7 +77,7 @@ public class ChatWindowController {
         // persist
         try {
             Message m = new Message(listingId, senderId, receiverId, text);
-            messageDAO.addMessage(m);
+            new MessageService().sendFromSession(m);
         } catch (Exception e) {
             appendSystem("⚠️ Save failed: " + e.getMessage());
         }

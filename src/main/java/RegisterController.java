@@ -10,16 +10,17 @@ public class RegisterController extends BaseController {
     @FXML private TextField usernameField;
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
+    @FXML private PasswordField confirmPasswordField;
     @FXML private ComboBox<String> roleBox;
 
-    private final UserDAO userDAO = new UserDAO();
+    private final AuthenticationService authService = new AuthenticationService();
 
     @FXML
     private void initialize() {
         // Populate the role dropdown
         if (roleBox != null && roleBox.getItems().isEmpty()) {
-            roleBox.getItems().addAll("OWNER", "RENTER");
-            roleBox.getSelectionModel().select("RENTER"); // default role
+            roleBox.getItems().addAll(Role.OWNER.name(), Role.RENTER.name());
+            roleBox.getSelectionModel().select(Role.RENTER.name()); // default role
         }
     }
 
@@ -30,21 +31,9 @@ public class RegisterController extends BaseController {
         String password = passwordField.getText();
         String role = roleBox.getValue();
 
-        // ✅ Input validation before DB operation
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || role == null) {
-            error("Missing Information", "Please fill in all required fields.");
-            return;
-        }
-
         try {
-            // Check if email already exists
-            if (userDAO.emailExists(email)) {
-                error("Already Registered", "An account with this email already exists.");
-                return;
-            }
-
             // Register user
-            userDAO.register(username, email, password, role);
+            authService.register(username, email, password, confirmPasswordField.getText(), role);
 
             // Success feedback
             info("Welcome!", "Account created successfully. You can log in now.");

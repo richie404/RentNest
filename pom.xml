@@ -14,9 +14,24 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>25</javafx.version>
         <junit.version>5.10.1</junit.version>
+        <flyway.version>13.8.0</flyway.version>
+        <mysql.version>9.0.0</mysql.version>
+        <rentnest.db.config>${project.basedir}/config/database.conf</rentnest.db.config>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>7.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>2.0.17</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- JavaFX -->
         <dependency>
@@ -58,7 +73,7 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>9.0.0</version>
+            <version>${mysql.version}</version>
         </dependency>
 
         <!-- BCrypt (for password hashing) -->
@@ -124,17 +139,58 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
+                <excludes>
+                    <exclude>db.properties</exclude>
+                    <exclude>**/*.conf</exclude>
+                </excludes>
                 <includes>
                     <include>**/*.fxml</include>
                     <include>**/*.css</include>
                     <include>**/*.properties</include>
                     <include>**/*.png</include>
                     <include>**/*.jpg</include>
+                    <include>db/migration/*.sql</include>
                 </includes>
             </resource>
         </resources>
 
         <plugins>
+
+            <!-- Explicit operator commands only; never bound to build or app startup. -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>${flyway.version}</version>
+                <configuration>
+                    <!-- Same external file as DBConfig; no credentials in the POM/JAR. -->
+                    <configFiles>
+                        <configFile>${rentnest.db.config}</configFile>
+                    </configFiles>
+                    <locations>
+                        <location>filesystem:${project.basedir}/src/main/resources/db/migration</location>
+                    </locations>
+                    <baselineVersion>1</baselineVersion>
+                    <baselineDescription>Existing RentNest schema before Phase 2</baselineDescription>
+                    <baselineOnMigrate>false</baselineOnMigrate>
+                    <cleanDisabled>true</cleanDisabled>
+                    <createSchemas>false</createSchemas>
+                    <validateOnMigrate>true</validateOnMigrate>
+                    <validateMigrationNaming>true</validateMigrationNaming>
+                    <outOfOrder>false</outOfOrder>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-mysql</artifactId>
+                        <version>${flyway.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.mysql</groupId>
+                        <artifactId>mysql-connector-j</artifactId>
+                        <version>${mysql.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
 
             <!-- Java Compiler -->
             <plugin>
@@ -162,5 +218,17 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>external-database-config</id>
+            <activation>
+                <property><name>env.RENTNEST_DB_CONFIG</name></property>
+            </activation>
+            <properties>
+                <rentnest.db.config>${env.RENTNEST_DB_CONFIG}</rentnest.db.config>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

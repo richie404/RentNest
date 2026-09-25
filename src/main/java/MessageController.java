@@ -17,7 +17,7 @@ public class MessageController {
     @FXML private Label chatTitle;
     @FXML private ScrollPane scrollPane;
 
-    private final MessageDAO messageDAO = new MessageDAO();
+    private final MessageService messageService = new MessageService();
     private int listingId;
     private int senderId;
     private int receiverId;
@@ -62,7 +62,7 @@ public class MessageController {
         Task<List<Message>> task = new Task<>() {
             @Override
             protected List<Message> call() throws Exception {
-                return messageDAO.getConversation(listingId, senderId, receiverId);
+                return messageService.findConversation(listingId, senderId, receiverId);
             }
         };
         task.setOnSucceeded(e -> {
@@ -122,6 +122,11 @@ public class MessageController {
         newMsg.setMessageText(text);
 
         if (Client.getInstance().isConnected()) {
+            try { messageService.validateFromSession(newMsg); }
+            catch (RuntimeException e) {
+                messageContainer.getChildren().add(new Label("Failed to send message: " + e.getMessage()));
+                return;
+            }
             // The server persists once before forwarding to the receiver.
             Client.getInstance().sendMessage(listingId, senderId, receiverId, text);
         } else {
@@ -129,7 +134,7 @@ public class MessageController {
             Task<Void> saveTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    messageDAO.addMessage(newMsg);
+                    new MessageService().sendFromSession(newMsg);
                     return null;
                 }
             };

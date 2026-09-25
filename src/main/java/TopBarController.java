@@ -42,10 +42,10 @@ public class TopBarController {
             return;
         }
 
-        switch (user.getRoles().toUpperCase()) {
-            case "ADMIN" -> Router.goToAdminDashboard();
-            case "OWNER" -> Router.goToOwnerDashboard(user.getId());
-            case "RENTER" -> Router.goToRenterDashboard(user.getId());
+        switch (user.getRole()) {
+            case ADMIN -> Router.goToAdminDashboard();
+            case OWNER -> Router.goToOwnerDashboard(user.getId());
+            case RENTER -> Router.goToRenterDashboard(user.getId());
             default -> Router.goToHomepage();
         }
     }

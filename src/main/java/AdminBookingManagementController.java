@@ -19,14 +19,14 @@ public class AdminBookingManagementController {
     @FXML private TableColumn<Booking, Double> colAmount;
     @FXML private TableColumn<Booking, String> colStatus;
 
-    private final BookingDAO bookingDAO = new BookingDAO();
+    private final AdminService adminService = new AdminService();
 
     @FXML
     private void initialize() {
         colId.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getId()).asObject());
         colProperty.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getListingId()).asObject());
         colRenter.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getRenterId()).asObject());
-        colOwner.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getOwnerId()).asObject());
+        colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getOwnerId()));
         colStart.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getStartDate().toString()));
 
@@ -40,18 +40,20 @@ public class AdminBookingManagementController {
     }
 
     private void loadBookings() {
-        List<Booking> bookings = bookingDAO.getAllBookings();
+        List<Booking> bookings = adminService.getAllBookings();
         bookingTable.setItems(FXCollections.observableArrayList(bookings));
     }
     @FXML
     private void handleCancel() {
-        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-        if (selected == null) { showAlert("Select a booking first."); return; }
+        try {
+            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+            if (selected == null) { showAlert("Select a booking first."); return; }
 
-        if (bookingDAO.updateBookingStatus(selected.getId(), "CANCELLED")) {
-            showAlert("Booking cancelled successfully.");
-            loadBookings();
-        }
+            if (adminService.cancelBooking(selected.getId())) {
+                showAlert("Booking cancelled successfully.");
+                loadBookings();
+            }
+        } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML
@@ -60,14 +62,18 @@ public class AdminBookingManagementController {
     }
     @FXML
     private void handleApprove() {
-        // TODO: implement approval logic
-        System.out.println("Approve clicked (Booking Management)");
+        try {
+            // TODO: implement approval logic
+            System.out.println("Approve clicked (Booking Management)");
+        } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML
     private void handleReject() {
-        System.out.println("Reject button clicked ❌");
-        // TODO: Add logic here to update booking status to "REJECTED"
+        try {
+            System.out.println("Reject button clicked ❌");
+            // TODO: Add logic here to update booking status to "REJECTED"
+        } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML

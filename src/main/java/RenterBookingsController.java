@@ -10,15 +10,15 @@ public class RenterBookingsController {
     @FXML private TableColumn<Booking, Integer> colBookingId;
     @FXML private TableColumn<Booking, Integer> colProperty;
     @FXML private TableColumn<Booking, Integer> colOwner;
-    @FXML private TableColumn<Booking, java.sql.Date> colStart;
-    @FXML private TableColumn<Booking, java.sql.Date> colEnd;
+    @FXML private TableColumn<Booking, java.time.LocalDate> colStart;
+    @FXML private TableColumn<Booking, java.time.LocalDate> colEnd;
     @FXML private TableColumn<Booking, Double> colAmount;
     @FXML private TableColumn<Booking, String> colStatus;
 
     @FXML private Button btnCancel;
     @FXML private Button btnRefresh;
 
-    private final BookingDAO bookingDAO = new BookingDAO();
+    private final BookingService bookingService = new BookingService();
     private int renterId;
 
     /* -----------------------------------------------------------
@@ -28,7 +28,7 @@ public class RenterBookingsController {
     private void initialize() {
         // Map table columns to Booking fields
         colBookingId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colProperty.setCellValueFactory(new PropertyValueFactory<>("propertyId"));
+        colProperty.setCellValueFactory(new PropertyValueFactory<>("listingId"));
         colOwner.setCellValueFactory(new PropertyValueFactory<>("ownerId"));
         colStart.setCellValueFactory(new PropertyValueFactory<>("startDate"));
         colEnd.setCellValueFactory(new PropertyValueFactory<>("endDate"));
@@ -36,7 +36,7 @@ public class RenterBookingsController {
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Load for logged-in renter if available
-        int currentUser = UserStore.getCurrentUserId();
+        int currentUser = (SessionManager.isLoggedIn() ? SessionManager.getLoggedInUser().getId() : -1);
         if (currentUser != -1) {
             setRenterId(currentUser); // ✅ automatically triggers load
         }
@@ -61,7 +61,7 @@ public class RenterBookingsController {
 
         try {
             ObservableList<Booking> bookings =
-                    FXCollections.observableArrayList(bookingDAO.getBookingsByRenter(renterId));
+                    FXCollections.observableArrayList(bookingService.findByRenter(renterId));
             bookingTable.setItems(bookings);
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,30 +74,21 @@ public class RenterBookingsController {
        ----------------------------------------------------------- */
     @FXML
     private void handleCancel() {
-        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("No Selection", "Please select a booking to cancel.");
-            return;
-        }
+        try {
+            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("No Selection", "Please select a booking to cancel.");
+                return;
+            }
 
-        String status = selected.getStatus();
-        if ("CANCELLED_BY_RENTER".equalsIgnoreCase(status)) {
-            showAlert("Info", "You already cancelled this booking.");
-            return;
-        }
-
-        if ("CONFIRMED".equalsIgnoreCase(status)) {
-            showAlert("Info", "Confirmed bookings cannot be cancelled directly.");
-            return;
-        }
-
-        boolean success = bookingDAO.cancelBooking(selected.getId());
-        if (success) {
-            showAlert("Cancelled", "Your booking has been cancelled successfully.");
-            loadBookings(); // ✅ refresh table
-        } else {
-            showAlert("Error", "Failed to cancel booking.");
-        }
+            boolean success = bookingService.cancelBooking(selected.getId());
+            if (success) {
+                showAlert("Cancelled", "Your booking has been cancelled successfully.");
+                loadBookings(); // ✅ refresh table
+            } else {
+                showAlert("Error", "Failed to cancel booking.");
+            }
+        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
     }
 
     /* -----------------------------------------------------------

@@ -54,11 +54,11 @@ public class Router {
         if (!SessionManager.isLoggedIn()) { goToLogin(); return; }
 
         User user = SessionManager.getLoggedInUser();
-        String role = (user.getRoles() == null) ? "" : user.getRoles().toUpperCase();
+        Role role = user.getRole();
 
-        if (role.contains("ADMIN")) {
+        if (role == Role.ADMIN) {
             goToAdminDashboard();
-        } else if (role.contains("OWNER")) {
+        } else if (role == Role.OWNER) {
             goToOwnerDashboard(user.getId());
         } else {
             goToRenterDashboard(user.getId());
@@ -69,17 +69,17 @@ public class Router {
        Admin Pages
        ----------------------------------------------------------- */
     public static void goToAdminDashboard() {
-        if (!checkAccess("ADMIN")) return;
+        if (!checkAccess(Role.ADMIN)) return;
         goTo("AdminDashboard.fxml");
     }
 
     public static void goToAdminUserManagement() {
-        if (!checkAccess("ADMIN")) return;
+        if (!checkAccess(Role.ADMIN)) return;
         goTo("AdminUserManagement.fxml");
     }
 
     public static void goToAdminListingManagement() {
-        if (!checkAccess("ADMIN")) return;
+        if (!checkAccess(Role.ADMIN)) return;
         goTo("AdminListingManagement.fxml");
     }
 
@@ -87,12 +87,12 @@ public class Router {
        Renter Dashboard
        ----------------------------------------------------------- */
     public static void goToRenterDashboard() {
-        if (!checkAccess("RENTER")) return;
+        if (!checkAccess(Role.RENTER)) return;
         goTo("RenterDashboard.fxml");
     }
 
     public static void goToRenterDashboard(int renterId) {
-        if (!checkAccess("RENTER")) return;
+        if (!checkAccess(Role.RENTER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/RenterDashboard.fxml"));
             Parent root = loader.load();
@@ -114,7 +114,7 @@ public class Router {
        Renter Subpages
        ----------------------------------------------------------- */
     public static void goToRenterBookings(int renterId) {
-        if (!checkAccess("RENTER")) return;
+        if (!checkAccess(Role.RENTER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/RenterBookings.fxml"));
             Parent root = loader.load();
@@ -135,12 +135,12 @@ public class Router {
        Owner Dashboard + Pages
        ----------------------------------------------------------- */
     public static void goToOwnerDashboard() {
-        if (!checkAccess("OWNER")) return;
+        if (!checkAccess(Role.OWNER)) return;
         goTo("OwnerDashboard.fxml");
     }
 
     public static void goToOwnerDashboard(int ownerId) {
-        if (!checkAccess("OWNER")) return;
+        if (!checkAccess(Role.OWNER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/OwnerDashboard.fxml"));
             Parent root = loader.load();
@@ -158,7 +158,7 @@ public class Router {
     }
 
     public static void goToAddListing(int ownerId) {
-        if (!checkAccess("OWNER")) return;
+        if (!checkAccess(Role.OWNER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/AddListing.fxml"));
             Parent root = loader.load();
@@ -176,7 +176,7 @@ public class Router {
     }
 
     public static void goToListings(int ownerId) {
-        if (!checkAccess("OWNER")) return;
+        if (!checkAccess(Role.OWNER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/listings.fxml"));
             Parent root = loader.load();
@@ -189,7 +189,7 @@ public class Router {
     }
 
     public static void goToOwnerBookings(int ownerId) {
-        if (!checkAccess("OWNER")) return;
+        if (!checkAccess(Role.OWNER)) return;
         try {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/OwnerBookings.fxml"));
             Parent root = loader.load();
@@ -286,7 +286,7 @@ public class Router {
         ft.play();
     }
 
-    private static boolean checkAccess(String requiredRole) {
+    private static boolean checkAccess(Role requiredRole) {
         if (!SessionManager.isLoggedIn()) {
             System.out.println("🚫 Not logged in – redirecting to login...");
             goToLogin();
@@ -294,8 +294,8 @@ public class Router {
         }
 
         User user = SessionManager.getLoggedInUser();
-        String roles = user.getRoles();
-        if (roles == null || !roles.toUpperCase().contains(requiredRole)) {
+        Role roles = user.getRole();
+        if (roles != requiredRole) {
             System.out.println("🚫 Role mismatch (" + roles + " vs required " + requiredRole + ")");
             goToHomepage();
             return false;
