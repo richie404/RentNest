@@ -3,7 +3,7 @@ public final class Server {
     public static void main(String[] args) { run(args,5000,false); }
     static void run(String[] args,int defaultPort,boolean legacyPipe) {
         int port=args.length==0?defaultPort:Integer.parseInt(args[0]);
-        try(MessagingServer server=new MessagingServer(System.getProperty("rentnest.chat.bind","0.0.0.0"),port,legacyPipe)) {
+        try(MessagingServer server=new MessagingServer(System.getProperty("rentnest.chat.bind","127.0.0.1"),port,legacyPipe)) {
             Thread hook=new Thread(server::close,"RentNest-chat-shutdown");
             Runtime.getRuntime().addShutdownHook(hook);
             try {server.start();server.await();}
