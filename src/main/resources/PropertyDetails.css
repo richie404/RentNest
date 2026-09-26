@@ -1,288 +1,54 @@
-/* ====== Modern Property Details Styling (Maroon/Lilac Theme) ====== */
-:root {
-  /* 🔹 New Palette */
-  -fx-primary: #591734;              /* Dark Red/Maroon */
-  -fx-primary-hover: #4a132b;       /* Darker maroon for hover */
-  -fx-primary-light: #E6D5E9;       /* Pink/Lilac */
-  -fx-secondary: #E6D5E9;           /* Pink/Lilac */
-  -fx-success: #591734;             /* Using primary maroon */
-  -fx-warning: #f59e0b;
+@import url("styles/rentnest-theme.css");
 
-  -fx-surface: #F5F5F5;             /* Light Gray/Off-White */
-  -fx-surface-elevated: #F5F5F5;    /* Light Gray/Off-White */
-  -fx-surface-card: #FFFFFF;        /* Pure White (for cards) */
-
-  -fx-text-primary: #000000;       /* Black Text */
-  -fx-text-secondary: #666666;     /* Gray Text */
-  -fx-text-accent: #591734;        /* Maroon */
-
-  -fx-border-light: #E0E0E0;       /* A neutral light gray border */
-  -fx-border-medium: #E6D5E9;      /* Lilac border for themed elements */
-
-  /* 🔹 Shadows & Gradients (Updated) */
-  -fx-shadow-light: rgba(0, 0, 0, 0.05);
-  -fx-shadow-medium: rgba(0, 0, 0, 0.1);
-  -fx-shadow-strong: rgba(89, 23, 52, 0.15); /* Maroon-tinted shadow */
-
-  -fx-gradient-primary: linear-gradient(135deg, #591734 0%, #8a3b5e 100%); /* Maroon gradient */
-  -fx-gradient-surface: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%); /* White to Light Gray */
+/* Container Overrides */
+.content-area {
+    -fx-padding: 32 40;
+    -fx-background-color: -fx-bg-default;
 }
 
-.root {
-  -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", system-ui, sans-serif;
-  -fx-background: -fx-gradient-surface;
+/* Image Stack Layout */
+.image-gallery-container {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-min-height: 500px;
+    -fx-alignment: center;
 }
 
-/* ====== Enhanced Header ====== */
-.header {
-  -fx-background: -fx-gradient-primary;
-  -fx-padding: 20 32;
-  -fx-spacing: 16;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 16, 0.3, 0, 4);
-  -fx-alignment: center-left;
+.image-placeholder {
+    -fx-background-color: -fx-surface;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
 }
 
-.label-title {
-  -fx-text-fill: Black;
-  -fx-font-size: 24px;
-  -fx-font-weight: 800;
-  -fx-letter-spacing: -0.5px;
-  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 2, 0, 0, 1);
+/* Details Grid */
+.stats-grid {
+    -fx-background-color: transparent;
 }
 
-/* ====== Property Information Styling ====== */
-.property-title {
-  -fx-font-size: 32px;
-  -fx-font-weight: 800;
-  -fx-text-fill: -fx-text-primary;
-  -fx-letter-spacing: -1px;
-  -fx-line-spacing: 4;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 4, 0, 0, 1);
+.detail-stat {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 16;
+    -fx-min-width: 140px;
+    -fx-spacing: 4;
 }
 
-.property-location {
-  -fx-font-size: 18px;
-  -fx-text-fill: -fx-text-secondary;
-  -fx-font-weight: 500;
-  -fx-letter-spacing: -0.2px;
+/* Right Action Column Container */
+.action-card {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 12, 0, 0, 4);
 }
 
-.property-price {
-  -fx-font-size: 28px;
-  -fx-font-weight: 800;
-  -fx-text-fill: -fx-success;
-  -fx-letter-spacing: -0.8px;
-  -fx-effect: dropshadow(gaussian, rgba(89, 23, 52, 0.2), 4, 0, 0, 1);
-}
-
-.property-description {
-  -fx-font-size: 16px;
-  -fx-line-spacing: 4;
-  -fx-control-inner-background: -fx-surface-card;
-  -fx-border-color: -fx-border-light;
-  -fx-border-width: 2;
-  -fx-border-radius: 16;
-  -fx-background-radius: 16;
-  -fx-padding: 20;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 8, 0.2, 0, 2);
-  -fx-text-fill: -fx-text-primary;
-  -fx-font-weight: 500;
-}
-
-.property-description:focused {
-  -fx-border-color: -fx-primary-light;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 12, 0.3, 0, 4);
-}
-
-/* ====== Enhanced Image Display ====== */
-.image-view {
-  -fx-effect: dropshadow(gaussian, -fx-shadow-medium, 16, 0.2, 0, 6);
-  -fx-background-radius: 20;
-  -fx-border-radius: 20;
-}
-
-.image-container {
-  -fx-background-color: -fx-surface-card;
-  -fx-background-radius: 20;
-  -fx-border-radius: 20;
-  -fx-border-color: -fx-border-light;
-  -fx-border-width: 1;
-  -fx-padding: 8;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 12, 0.2, 0, 4);
-}
-
-/* ====== Enhanced Action Buttons ====== */
-.button-primary {
-  -fx-background-color: -fx-primary;
-  -fx-text-fill: white;
-  -fx-font-weight: 700;
-  -fx-font-size: 16px;
-  -fx-background-radius: 16;
-  -fx-border-radius: 16;
-  -fx-padding: 14 24;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 8, 0.3, 0, 3);
-  -fx-transition: all 0.2s ease;
-}
-
-.button-primary:hover {
-  -fx-background-color: -fx-primary-hover;
-  -fx-scale-x: 1.05;
-  -fx-scale-y: 1.05;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 12, 0.4, 0, 5);
-}
-
-.button-secondary {
-  -fx-background-color: white;
-  -fx-text-fill: -fx-primary;
-  -fx-border-color: -fx-primary;
-  -fx-border-width: 2;
-  -fx-font-weight: 700;
-  -fx-font-size: 16px;
-  -fx-border-radius: 16;
-  -fx-background-radius: 16;
-  -fx-padding: 12 22;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 6, 0.2, 0, 2);
-  -fx-transition: all 0.2s ease;
-}
-
-.button-secondary:hover {
-  -fx-background-color: -fx-primary-light;
-  -fx-scale-x: 1.03;
-  -fx-scale-y: 1.03;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-medium, 8, 0.3, 0, 3);
-}
-
-/* ====== Special Chat Button (Using Maroon) ====== */
-.chat-button {
-  -fx-background-color: -fx-success;
-  -fx-text-fill: white;
-  -fx-font-weight: 700;
-  -fx-font-size: 16px;
-  -fx-background-radius: 16;
-  -fx-border-radius: 16;
-  -fx-padding: 14 24;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 8, 0.3, 0, 3);
-  -fx-transition: all 0.2s ease;
-}
-
-.chat-button:hover {
-  -fx-background-color: -fx-primary-hover;
-  -fx-scale-x: 1.05;
-  -fx-scale-y: 1.05;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-strong, 12, 0.4, 0, 5);
-}
-
-/* ====== Property Features/Amenities ====== */
-.feature-tag {
-  -fx-background-color: -fx-primary-light;
-  -fx-text-fill: -fx-primary;
-  -fx-font-weight: 600;
-  -fx-font-size: 13px;
-  -fx-background-radius: 20;
-  -fx-border-radius: 20;
-  -fx-padding: 6 12;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 4, 0, 0, 1);
-}
-
-.amenity-icon {
-  -fx-text-fill: -fx-primary;
-  -fx-font-size: 18px;
-}
-
-/* ====== Content Container ====== */
-.content-container {
-  -fx-background-color: -fx-surface-card;
-  -fx-background-radius: 24;
-  -fx-border-radius: 24;
-  -fx-border-color: -fx-border-light;
-  -fx-border-width: 1;
-  -fx-padding: 32;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 16, 0.2, 0, 6);
-  -fx-spacing: 24;
-}
-
-/* ====== Property Stats Cards ====== */
-.stats-card {
-  -fx-background-color: -fx-surface-elevated;
-  -fx-background-radius: 16;
-  -fx-border-radius: 16;
-  -fx-border-color: -fx-border-light;
-  -fx-border-width: 1;
-  -fx-padding: 16;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 8, 0.2, 0, 2);
-  -fx-alignment: center;
-}
-
-.stats-number {
-  -fx-font-size: 24px;
-  -fx-font-weight: 800;
-  -fx-text-fill: -fx-primary;
-}
-
-.stats-label {
-  -fx-font-size: 12px;
-  -fx-font-weight: 600;
-  -fx-text-fill: -fx-text-secondary;
-  -fx-text-transform: uppercase;
-  -fx-letter-spacing: 0.5px;
-}
-
-/* ====== Back Button Enhancement ====== */
-.back-button {
-  -fx-background-color: rgba(255, 255, 255, 0.9);
-  -fx-text-fill: -fx-primary;
-  -fx-border-color: rgba(255, 255, 255, 0.5);
-  -fx-border-width: 2;
-  -fx-font-weight: 600;
-  -fx-background-radius: 12;
-  -fx-border-radius: 12;
-  -fx-padding: 8 16;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 1);
-}
-
-.back-button:hover {
-  -fx-background-color: white;
-  -fx-text-fill: -fx-primary-hover;
-  -fx-border-color: rgba(255, 255, 255, 0.8);
-}
-
-/* ====== Focus States ====== */
-.button:focused,
-.text-area:focused {
-  -fx-effect: dropshadow(gaussian, -fx-primary, 8, 0.6, 0, 0);
-}
-
-/* ====== Responsive Spacing ====== */
-.property-info-section {
-  -fx-spacing: 16;
-  -fx-alignment: center;
-}
-
-.button-group {
-  -fx-spacing: 16;
-  -fx-alignment: center;
-}
-
-/* ====== Loading States ====== */
-.loading-placeholder {
-  -fx-background-color: -fx-surface-elevated;
-  -fx-background-radius: 8;
-  -fx-border-radius: 8;
-  -fx-effect: dropshadow(gaussian, -fx-shadow-light, 4, 0, 0, 1);
-}
-
-/* ====== Error States ====== */
-.error-message {
-  -fx-text-fill: #ef4444;
-  -fx-font-weight: 600;
-  -fx-background-color: #fef2f2;
-  -fx-background-radius: 8;
-  -fx-border-radius: 8;
-  -fx-border-color: #fecaca;
-  -fx-border-width: 1;
-  -fx-padding: 12 16;
+.w-full {
+    -fx-max-width: Infinity;
 }

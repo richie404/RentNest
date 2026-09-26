@@ -4,12 +4,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
 
 public class Router {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Router.class);
     private static Stage stage;
 
     public static void setStage(Stage primaryStage) {
@@ -21,19 +24,18 @@ public class Router {
        ----------------------------------------------------------- */
     private static void goTo(String fxml) {
         try {
-            System.out.println("\n🧭 [Router] Attempting to load: " + fxml);
+            LOG.debug("Loading FXML: {}", fxml);
             URL resource = Router.class.getResource("/" + fxml);
-            System.out.println("🔍 [Router] Resource URL: " + resource);
 
-            if (resource == null) throw new IOException("FXML not found: " + fxml);
+            if (resource == null) throw new IOException("FXML resource not found: " + fxml);
 
             FXMLLoader loader = new FXMLLoader(resource);
             Parent root = loader.load();
             showScene(root, "RentNest");
+            LOG.debug("FXML loaded successfully: {}", fxml);
 
-        } catch (Exception e) {
-            System.err.println("❌ [Router] Failed to load FXML: " + fxml);
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOG.error("Failed to load FXML: {}", fxml, e);
         }
     }
 
@@ -97,7 +99,6 @@ public class Router {
             FXMLLoader loader = new FXMLLoader(Router.class.getResource("/RenterDashboard.fxml"));
             Parent root = loader.load();
 
-            // 🔹 Pass renterId to controller
             Object controller = loader.getController();
             if (controller instanceof RenterDashboardController rdc) {
                 rdc.setRenterId(renterId);
@@ -105,8 +106,7 @@ public class Router {
 
             showScene(root, "Renter Dashboard");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to load RenterDashboard.fxml");
+            LOG.error("Failed to load RenterDashboard.fxml", e);
         }
     }
 
@@ -126,8 +126,7 @@ public class Router {
 
             showScene(root, "My Bookings");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open RenterBookings.fxml");
+            LOG.error("Failed to load RenterBookings.fxml", e);
         }
     }
 
@@ -152,8 +151,7 @@ public class Router {
 
             showScene(root, "Owner Dashboard");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open OwnerDashboard.fxml");
+            LOG.error("Failed to load OwnerDashboard.fxml", e);
         }
     }
 
@@ -170,8 +168,7 @@ public class Router {
 
             showScene(root, "Add Listing");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open AddListing.fxml");
+            LOG.error("Failed to load AddListing.fxml", e);
         }
     }
 
@@ -201,8 +198,7 @@ public class Router {
 
             showScene(root, "My Bookings");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open OwnerBookings.fxml");
+            LOG.error("Failed to load OwnerBookings.fxml", e);
         }
     }
 
@@ -221,8 +217,7 @@ public class Router {
 
             showScene(root, "Property Details");
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open PropertyDetails.fxml");
+            LOG.error("Failed to load PropertyDetails.fxml for listing {}", listingId, e);
         }
     }
 
@@ -241,7 +236,7 @@ public class Router {
 
             showScene(root, "RentNest Chat Assistant");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("Failed to load chat.fxml", e);
         }
     }
 
@@ -256,8 +251,7 @@ public class Router {
 
             showScene(root, "Messages - " + title);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("❌ Failed to open Message.fxml");
+            LOG.error("Failed to load Message.fxml", e);
         }
     }
 
@@ -270,11 +264,15 @@ public class Router {
             WindowManager.configureMain(stage);
         }
 
-        if (stage.getScene() == null) {
-            stage.setScene(new Scene(root));
+        Scene scene = stage.getScene();
+        if (scene == null) {
+            scene = new Scene(root);
+            stage.setScene(scene);
         } else {
-            stage.getScene().setRoot(root);
+            scene.setRoot(root);
         }
+        applyTheme(scene);
+
         stage.setTitle(title);
         stage.show();
 
@@ -286,9 +284,20 @@ public class Router {
         ft.play();
     }
 
+    private static void applyTheme(Scene scene) {
+        if (scene == null) return;
+        URL themeUrl = Router.class.getResource("/styles/rentnest-theme.css");
+        if (themeUrl != null) {
+            String themeStr = themeUrl.toExternalForm();
+            if (!scene.getStylesheets().contains(themeStr)) {
+                scene.getStylesheets().add(0, themeStr);
+            }
+        }
+    }
+
     private static boolean checkAccess(Role requiredRole) {
         if (!SessionManager.isLoggedIn()) {
-            System.out.println("🚫 Not logged in – redirecting to login...");
+            LOG.warn("Navigation denied — user not logged in; redirecting to login");
             goToLogin();
             return false;
         }
@@ -296,7 +305,7 @@ public class Router {
         User user = SessionManager.getLoggedInUser();
         Role roles = user.getRole();
         if (roles != requiredRole) {
-            System.out.println("🚫 Role mismatch (" + roles + " vs required " + requiredRole + ")");
+            LOG.warn("Navigation denied — role mismatch (user={}, required={})", roles, requiredRole);
             goToHomepage();
             return false;
         }

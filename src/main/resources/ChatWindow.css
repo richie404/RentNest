@@ -1,91 +1,39 @@
-/* ===== Palette (yours) ===== */
-:root {
-  -fx-maroon:   #591734;   /* header, accents */
-  -fx-offwhite: #F5F5F5;   /* page bg */
-  -fx-lilac:    #E6D5E9;   /* user bubble */
-  -fx-gray:     #666666;   /* timestamps / secondary text */
-  -fx-black:    #000000;   /* strong text */
-  -fx-white:    #FFFFFF;   /* assistant bubble */
-  /* gentle complements per brief */
-  -fx-teal:     #99c7bd;   /* tiny accents only */
-  -fx-warm:     #F0ECE7;   /* soft neutral surface */
+@import url("styles/rentnest-theme.css");
+
+.chat-header {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: transparent transparent -fx-border transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 16 24;
 }
 
-/* ===== Root & scroll bg ===== */
-.scroll > .viewport { -fx-background-color: transparent; }
-.messages           { -fx-background-color: -fx-offwhite; -fx-padding: 16; -fx-spacing: 12; }
-
-/* ===== Header ===== */
-.header {
-  -fx-background-color: -fx-maroon;
-  -fx-padding: 10 14;
-  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 8, 0.2, 0, 2);
-}
-.header-title { -fx-text-fill: -fx-white; -fx-font-size: 16px; -fx-font-weight: 800; }
-.header-sub   { -fx-text-fill: rgba(255,255,255,0.85); -fx-font-size: 13px; }
-
-.btn-ghost {
-  -fx-background-color: transparent;
-  -fx-text-fill: -fx-white;
-  -fx-font-weight: 600;
-  -fx-background-radius: 8;
-}
-.btn-ghost:hover { -fx-underline: true; }
-
-/* ===== Composer ===== */
-.composer {
-  -fx-background-color: -fx-warm;
-  -fx-padding: 12;
-  -fx-border-color: rgba(0,0,0,0.06);
-  -fx-border-width: 1 0 0 0;
-}
-.text-field, .password-field {
-  -fx-background-radius: 10;
-  -fx-border-radius: 10;
-  -fx-background-color: -fx-white;
-  -fx-border-color: rgba(0,0,0,0.12);
-  -fx-padding: 10 12;
-}
-.text-field:focused { -fx-border-color: -fx-teal; }
-
-.btn-primary {
-  -fx-background-color: -fx-maroon;
-  -fx-text-fill: -fx-white;
-  -fx-font-weight: 700;
-  -fx-background-radius: 10;
-  -fx-padding: 10 16;
-}
-.btn-primary:hover { -fx-background-color: #6d2043; }
-
-/* ===== Message rows ===== */
-.row { -fx-padding: 2 8; -fx-spacing: 6; -fx-max-width: Infinity; }
-.row-left  { -fx-alignment: CENTER_LEFT;  }
-.row-right { -fx-alignment: CENTER_RIGHT; }
-
-/* ===== Bubble + timestamp ===== */
-.bubble {
-  -fx-padding: 10 14;
-  -fx-background-radius: 14;
-  -fx-wrap-text: true;
-  -fx-line-spacing: 2;
-  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 4, 0, 0, 1);
-  -fx-max-width: 520;
-}
-.bubble-user {
-  -fx-background-color: -fx-lilac;     /* you */
-  -fx-text-fill: -fx-maroon;
-}
-.bubble-other {
-  -fx-background-color: -fx-white;     /* assistant/other */
-  -fx-text-fill: -fx-gray;
-  -fx-border-color: rgba(0,0,0,0.08);
-  -fx-border-width: 1;
-  -fx-background-insets: 0, 1;
+.chat-messages {
+    -fx-background-color: -fx-bg-default;
 }
 
-/* little timestamp that follows alignment */
-.time {
-  -fx-text-fill: -fx-gray;
-  -fx-font-size: 11px;
-  -fx-padding: 2 4 0 4;
+.chat-composer {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border transparent transparent transparent;
+    -fx-border-width: 1px;
+}
+
+/* Chat bubble styling from ChatWindowController */
+.chat-bubble-me {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: white;
+    -fx-padding: 12 16;
+    -fx-background-radius: 16 16 4 16;
+    -fx-font-family: -fx-font-family;
+    -fx-font-size: 15px;
+}
+
+.chat-bubble-them {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: -fx-border;
+    -fx-text-fill: -fx-text-primary;
+    -fx-padding: 12 16;
+    -fx-background-radius: 16 16 16 4;
+    -fx-border-radius: 16 16 16 4;
+    -fx-font-family: -fx-font-family;
+    -fx-font-size: 15px;
 }

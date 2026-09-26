@@ -4,24 +4,47 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.ListCell;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.util.List;
 
 public class RenterDashboardController extends BaseController {
 
-    @FXML private ListView<Listing> favoritesList;
+    // Navigation buttons
+    @FXML private Button btnDashboard;
+    @FXML private Button btnFavorites;
+    @FXML private Button btnBookings;
+    @FXML private Button btnMessages;
+
+    // View sections
+    @FXML private VBox dashboardView;
+    @FXML private VBox favoritesView;
+    @FXML private VBox bookingsView;
+    @FXML private VBox messagesView;
+
+    // Dashboard Stats
+    @FXML private Label savedPropertiesCount;
+    @FXML private Label pendingBookingsCount;
+    @FXML private Label activeBookingsCount;
+    @FXML private Label unreadMessagesCount;
+
+    // Favorites
+    @FXML private TilePane favoritesGrid;
+    @FXML private VBox favoritesEmptyState;
+    @FXML private ScrollPane favoritesScroll;
+
+    // Messages
     @FXML private ListView<Message> messageList;
     @FXML private Button viewChatButton;
+    @FXML private VBox messagesEmptyState;
+
     @FXML private RenterBookingsController renterBookingsController;
 
-    private final ListingService listingService = new ListingService();
+    private final FavoriteService favoriteService = new FavoriteService();
+    private final BookingService bookingService = new BookingService();
     private final MessageService messageService = new MessageService();
     private int renterId;
 
-    /* -----------------------------------------------------------
-       🏠 Initialize dashboard
-       ----------------------------------------------------------- */
     @FXML
     public void initialize() {
         if (!requireRole(Role.RENTER)) return;
@@ -30,15 +53,6 @@ public class RenterDashboardController extends BaseController {
         if (user != null) {
             renterId = user.getId();
         }
-
-        // Initialize lists, buttons, etc.
-        favoritesList.setCellFactory(v -> new ListCell<>() {
-            @Override
-            protected void updateItem(Listing l, boolean empty) {
-                super.updateItem(l, empty);
-                setText((empty || l == null) ? null : l.getTitle() + " — ৳" + l.getPricePerMonth() + " | " + l.getLocation());
-            }
-        });
 
         messageList.setCellFactory(v -> new ListCell<>() {
             @Override
@@ -51,63 +65,181 @@ public class RenterDashboardController extends BaseController {
             }
         });
 
-        if (viewChatButton != null)
+        if (viewChatButton != null) {
             viewChatButton.disableProperty().bind(messageList.getSelectionModel().selectedItemProperty().isNull());
-    }
+        }
 
+        showDashboard();
+    }
 
     public void setRenterId(int renterId) {
         this.renterId = renterId;
-        System.out.println("✅ [RenterDashboardController] Renter ID set: " + renterId);
+        log.debug("Renter ID set: {}", renterId);
 
-        // Forward to included bookings tab
         if (renterBookingsController != null) {
             renterBookingsController.setRenterId(renterId);
-            System.out.println("📤 Forwarded renterId to RenterBookingsController");
-        } else {
-            System.err.println("⚠️ RenterBookingsController is null — check fx:include fx:id");
         }
 
-        loadFeatured();
+        loadDashboardStats();
+    }
+
+    private void setActiveButton(Button activeBtn) {
+        Button[] buttons = {btnDashboard, btnFavorites, btnBookings, btnMessages};
+        for (Button btn : buttons) {
+            if (btn != null) {
+                btn.getStyleClass().remove("active");
+            }
+        }
+        if (activeBtn != null) {
+            activeBtn.getStyleClass().add("active");
+        }
+    }
+
+    private void hideAllViews() {
+        if (dashboardView != null) dashboardView.setVisible(false);
+        if (favoritesView != null) favoritesView.setVisible(false);
+        if (bookingsView != null) bookingsView.setVisible(false);
+        if (messagesView != null) messagesView.setVisible(false);
+    }
+
+    @FXML
+    private void showDashboard() {
+        setActiveButton(btnDashboard);
+        hideAllViews();
+        if (dashboardView != null) dashboardView.setVisible(true);
+        loadDashboardStats();
+    }
+
+    @FXML
+    private void showFavorites() {
+        setActiveButton(btnFavorites);
+        hideAllViews();
+        if (favoritesView != null) favoritesView.setVisible(true);
+        loadFavorites();
+    }
+
+    @FXML
+    private void showBookings() {
+        setActiveButton(btnBookings);
+        hideAllViews();
+        if (bookingsView != null) bookingsView.setVisible(true);
+    }
+
+    @FXML
+    private void showMessages() {
+        setActiveButton(btnMessages);
+        hideAllViews();
+        if (messagesView != null) messagesView.setVisible(true);
         loadMessages();
     }
 
-    /* -----------------------------------------------------------
-       🌟 Load featured listings
-       ----------------------------------------------------------- */
-    private void loadFeatured() {
+    private void loadDashboardStats() {
         try {
-            List<Listing> featured = listingService.findFeatured(6);
-            favoritesList.setItems(FXCollections.observableArrayList(featured));
+            List<Listing> favorites = favoriteService.findMine();
+            if (savedPropertiesCount != null) savedPropertiesCount.setText(String.valueOf(favorites.size()));
+
+            List<Booking> bookings = bookingService.findByRenter(renterId);
+            long pending = bookings.stream().filter(b -> b.getBookingStatus().isPending()).count();
+            long active = bookings.stream().filter(b -> b.getBookingStatus() == BookingStatus.APPROVED || b.getBookingStatus() == BookingStatus.CONFIRMED).count();
+            
+            if (pendingBookingsCount != null) pendingBookingsCount.setText(String.valueOf(pending));
+            if (activeBookingsCount != null) activeBookingsCount.setText(String.valueOf(active));
+
+            List<Message> msgs = messageService.findByUser(renterId);
+            if (unreadMessagesCount != null) unreadMessagesCount.setText(String.valueOf(msgs.size()));
         } catch (Exception ex) {
-            error("Failed to load listings", ex.getMessage());
+            handleServiceError("load dashboard statistics", ex);
         }
     }
 
-    /* -----------------------------------------------------------
-       💬 Load messages for renter (sent or received)
-       ----------------------------------------------------------- */
+    private void loadFavorites() {
+        try {
+            List<Listing> favorites = favoriteService.findMine();
+            if (favorites.isEmpty()) {
+                if (favoritesEmptyState != null) {
+                    favoritesEmptyState.setVisible(true);
+                    favoritesEmptyState.setManaged(true);
+                }
+                if (favoritesScroll != null) {
+                    favoritesScroll.setVisible(false);
+                    favoritesScroll.setManaged(false);
+                }
+            } else {
+                if (favoritesEmptyState != null) {
+                    favoritesEmptyState.setVisible(false);
+                    favoritesEmptyState.setManaged(false);
+                }
+                if (favoritesScroll != null) {
+                    favoritesScroll.setVisible(true);
+                    favoritesScroll.setManaged(true);
+                }
+                populateFavoritesGrid(favorites);
+            }
+        } catch (Exception ex) {
+            handleServiceError("load favorites", ex);
+        }
+    }
+
+    private void populateFavoritesGrid(List<Listing> listings) {
+        if (favoritesGrid == null) return;
+        favoritesGrid.getChildren().clear();
+        for (Listing l : listings) {
+            VBox card = new VBox(10);
+            card.getStyleClass().add("property-card");
+            card.setPrefWidth(280);
+            card.setMaxWidth(280);
+
+            Label title = new Label(l.getTitle());
+            title.getStyleClass().add("text-h3");
+            
+            Label location = new Label("📍 " + l.getLocation());
+            location.getStyleClass().add("text-body-small");
+            
+            Label price = new Label("৳" + l.getPricePerMonth() + "/mo");
+            price.getStyleClass().add("text-h2");
+            
+            Button viewBtn = new Button("View Details");
+            viewBtn.getStyleClass().add("button-primary");
+            viewBtn.setOnAction(e -> Router.goToDetails(l.getId()));
+            
+            card.getChildren().addAll(title, location, price, viewBtn);
+            favoritesGrid.getChildren().add(card);
+        }
+    }
+
     private void loadMessages() {
         try {
             List<Message> msgs = messageService.findByUser(renterId);
-            messageList.setItems(FXCollections.observableArrayList(msgs));
+            if (msgs.isEmpty()) {
+                if (messagesEmptyState != null) {
+                    messagesEmptyState.setVisible(true);
+                    messagesEmptyState.setManaged(true);
+                }
+                if (messageList != null) {
+                    messageList.setVisible(false);
+                    messageList.setManaged(false);
+                }
+            } else {
+                if (messagesEmptyState != null) {
+                    messagesEmptyState.setVisible(false);
+                    messagesEmptyState.setManaged(false);
+                }
+                if (messageList != null) {
+                    messageList.setVisible(true);
+                    messageList.setManaged(true);
+                    messageList.setItems(FXCollections.observableArrayList(msgs));
+                }
+            }
         } catch (Exception e) {
-            error("Failed to load messages", e.getMessage());
+            handleServiceError("load messages", e);
         }
     }
 
-    /* -----------------------------------------------------------
-       💬 Open chat window (bidirectional + safe)
-       ----------------------------------------------------------- */
     @FXML
     private void handleViewChat() {
         Message selected = messageList.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Message Selected");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a message to open chat.");
-            alert.showAndWait();
+            warn("No Message Selected", "Please select a message to open chat.");
             return;
         }
 
@@ -116,12 +248,9 @@ public class RenterDashboardController extends BaseController {
             int ownerId;
             int renterId = this.renterId;
 
-            // ✅ Determine who is owner based on message direction
             if (selected.getSenderId() == renterId) {
-                // renter sent this → owner is receiver
                 ownerId = selected.getReceiverId();
             } else {
-                // renter received this → owner is sender
                 ownerId = selected.getSenderId();
             }
 
@@ -131,7 +260,6 @@ public class RenterDashboardController extends BaseController {
             Parent root = loader.load();
 
             ChatWindowController controller = loader.getController();
-            // ✅ renter is always sender (current user)
             controller.initChat(listingId, renterId, ownerId, title);
 
             Stage stage = new Stage();
@@ -141,45 +269,13 @@ public class RenterDashboardController extends BaseController {
             stage.show();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            error("Chat Error", "Unable to open chat:\n" + e.getMessage());
+            log.error("Unable to open chat for renterId={}", renterId, e);
+            error("Chat Error", "Unable to open chat. Please try again.");
         }
     }
 
-    /* -----------------------------------------------------------
-       🔄 Refresh / Reload
-       ----------------------------------------------------------- */
-    @FXML
-    private void handleRefresh() {
-        loadFeatured();
-        loadMessages();
-    }
-    @FXML
-    private void handleMyBookings() {
-        int renterId = (SessionManager.isLoggedIn() ? SessionManager.getLoggedInUser().getId() : -1); // Current authenticated session
-        if (renterId == -1) {
-            System.out.println("⚠️ No renter logged in");
-            return;
-        }
-        Router.goToRenterBookings(renterId);
-    }
-
-    /* -----------------------------------------------------------
-       🔗 Navigation
-       ----------------------------------------------------------- */
     @FXML
     private void handleBrowse() {
         Router.goToBrowse();
-    }
-
-    @FXML
-    private void handleHome() {
-        Router.goToHomepage();
-    }
-
-    @FXML
-    private void handleLogout() {
-        SessionManager.logout();
-        Router.goToHomepage();
     }
 }

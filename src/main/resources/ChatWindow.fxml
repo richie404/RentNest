@@ -5,31 +5,39 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="ChatWindowController"
-            stylesheets="@ChatWindow.css">
+            stylesheets="@ChatWindow.css"
+            styleClass="bg-default">
 
     <!-- Header -->
     <top>
-        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="header">
-            <Label text="RentNest Chat" styleClass="header-title"/>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="chat-header">
+            <Label text="RentNest Chat" styleClass="text-h2"/>
             <Pane HBox.hgrow="ALWAYS"/>
-            <Label fx:id="chatTitle" text="Chat" styleClass="header-sub"/>
-            <Button text="Back" onAction="#handleBack" styleClass="btn-ghost"/>
+            <Label fx:id="chatTitle" text="Chat" styleClass="text-body-large, text-secondary"/>
+            <Button text="Close" onAction="#handleBack" styleClass="btn, btn-secondary"/>
         </HBox>
     </top>
 
     <!-- Messages -->
     <center>
         <ScrollPane fx:id="scroll" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
-                    styleClass="scroll">
-            <VBox fx:id="messages" styleClass="messages" fillWidth="true"/>
+                    styleClass="edge-to-edge">
+            <VBox fx:id="messages" spacing="12" styleClass="chat-messages" fillWidth="true">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+            </VBox>
         </ScrollPane>
     </center>
 
     <!-- Composer -->
     <bottom>
-        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="composer">
-            <TextField fx:id="input" promptText="Type your message…" HBox.hgrow="ALWAYS" />
-            <Button text="Send" onAction="#handleSend" styleClass="btn-primary"/>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="chat-composer">
+            <padding>
+                <Insets top="16" right="16" bottom="16" left="16"/>
+            </padding>
+            <TextField fx:id="input" promptText="Type your message…" styleClass="text-field" HBox.hgrow="ALWAYS" />
+            <Button text="Send" onAction="#handleSend" styleClass="btn, btn-primary"/>
         </HBox>
     </bottom>
 </BorderPane>

@@ -1,5 +1,8 @@
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -7,6 +10,8 @@ import java.util.Objects;
 
 /** Owns one lazily initialized pool per process. Closing a borrowed connection returns it. */
 public final class Database {
+    private static final Logger LOG = LoggerFactory.getLogger(Database.class);
+
     private static HikariDataSource pool;
     private static DataSource testSource;
     private static boolean closed;
@@ -28,6 +33,7 @@ public final class Database {
     static synchronized HikariDataSource dataSource() throws SQLException {
         if (closed) throw new SQLException("Database pool has been shut down");
         if (pool == null) {
+            LOG.info("Initialising HikariCP connection pool");
             HikariConfig config = new HikariConfig();
             config.setPoolName("RentNest");
             config.setDataSource(DBConfig.createDataSource());
@@ -42,6 +48,7 @@ public final class Database {
             config.setInitializationFailTimeout(-1);
             config.setAutoCommit(true);
             pool = new HikariDataSource(config);
+            LOG.info("Connection pool ready");
         }
         return pool;
     }
@@ -57,6 +64,9 @@ public final class Database {
         if (closed) return;
         closed = true;
         testSource = null;
-        if (pool != null) pool.close();
+        if (pool != null) {
+            LOG.info("Closing database connection pool");
+            pool.close();
+        }
     }
 }

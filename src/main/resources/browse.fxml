@@ -5,7 +5,8 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="BrowseController"
-            stylesheets="@browse.css">
+            stylesheets="@browse.css"
+            styleClass="bg-default">
 
     <!-- 🔹 Shared TopBar -->
     <top>
@@ -14,21 +15,25 @@
 
     <!-- 🔹 Filters (Left Sidebar) -->
     <left>
-        <ScrollPane fitToWidth="true" prefWidth="260" styleClass="filter-scroll">
+        <ScrollPane fitToWidth="true" styleClass="edge-to-edge">
             <content>
-                <VBox spacing="12" styleClass="filter-pane">
-                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-
+                <VBox spacing="20" styleClass="sidebar">
                     <fx:define>
                         <ToggleGroup fx:id="priceGroup"/>
                         <ToggleGroup fx:id="bedGroup"/>
                     </fx:define>
 
-                    <Label text="Filters" styleClass="filter-title"/>
+                    <Label text="Filters" styleClass="sidebar-title"/>
+
+                    <!-- Search -->
+                    <VBox spacing="8">
+                        <Label text="Search Keyword" styleClass="filter-label"/>
+                        <TextField fx:id="searchField" promptText="Location, name..." styleClass="text-field"/>
+                    </VBox>
 
                     <!-- Price Filters -->
-                    <Label text="Price Range" styleClass="filter-label"/>
-                    <VBox spacing="5">
+                    <VBox spacing="8">
+                        <Label text="Price Range" styleClass="filter-label"/>
                         <RadioButton fx:id="priceAny" text="Any Price" toggleGroup="${priceGroup}" selected="true"/>
                         <RadioButton fx:id="price1" text="৳0 - ৳10,000" toggleGroup="${priceGroup}"/>
                         <RadioButton fx:id="price2" text="৳10,000 - ৳20,000" toggleGroup="${priceGroup}"/>
@@ -36,11 +41,9 @@
                         <RadioButton fx:id="price4" text="৳30,000+" toggleGroup="${priceGroup}"/>
                     </VBox>
 
-                    <Separator/>
-
                     <!-- Property Type -->
-                    <Label text="Property Type" styleClass="filter-label"/>
-                    <VBox spacing="5">
+                    <VBox spacing="8">
+                        <Label text="Property Type" styleClass="filter-label"/>
                         <CheckBox fx:id="typeRoom" text="Room"/>
                         <CheckBox fx:id="typeFlat" text="Flat"/>
                         <CheckBox fx:id="typeApartment" text="Apartment"/>
@@ -48,22 +51,18 @@
                         <CheckBox fx:id="typeParking" text="Parking"/>
                     </VBox>
 
-                    <Separator/>
-
                     <!-- Bedrooms -->
-                    <Label text="Bedrooms" styleClass="filter-label"/>
-                    <VBox spacing="5">
+                    <VBox spacing="8">
+                        <Label text="Bedrooms" styleClass="filter-label"/>
                         <RadioButton fx:id="bedAny" text="Any" toggleGroup="${bedGroup}" selected="true"/>
                         <RadioButton fx:id="bed1" text="1" toggleGroup="${bedGroup}"/>
                         <RadioButton fx:id="bed2" text="2" toggleGroup="${bedGroup}"/>
                         <RadioButton fx:id="bed3" text="3+" toggleGroup="${bedGroup}"/>
                     </VBox>
 
-                    <Separator/>
-
                     <!-- Amenities -->
-                    <Label text="Amenities" styleClass="filter-label"/>
-                    <VBox spacing="5">
+                    <VBox spacing="8">
+                        <Label text="Amenities" styleClass="filter-label"/>
                         <CheckBox fx:id="amenWifi" text="Wi-Fi"/>
                         <CheckBox fx:id="amenParking" text="Parking"/>
                         <CheckBox fx:id="amenPets" text="Pets Allowed"/>
@@ -71,25 +70,49 @@
                         <CheckBox fx:id="amenSecurity" text="Security"/>
                     </VBox>
 
-                    <Separator/>
+                    <Region VBox.vgrow="ALWAYS" minHeight="20"/>
 
                     <!-- Buttons -->
-                    <Button text="Apply Filters" styleClass="btn-apply" onAction="#handleApplyFilters"/>
-                    <Button text="Reset" styleClass="btn-reset" onAction="#handleResetFilters"/>
+                    <Button text="Apply Filters" styleClass="button-primary" maxWidth="Infinity" onAction="#handleApplyFilters"/>
+                    <Button text="Reset Filters" styleClass="button-secondary" maxWidth="Infinity" onAction="#handleResetFilters"/>
                 </VBox>
             </content>
         </ScrollPane>
     </left>
 
-    <!-- 🔹 Property Grid -->
+    <!-- 🔹 Content Area -->
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true" styleClass="scroller">
-            <content>
-                <TilePane fx:id="grid" hgap="10" vgap="10" prefColumns="3" prefTileWidth="320" minWidth="0">
-                    <padding><Insets top="16" right="16" bottom="24" left="16"/></padding>
-                </TilePane>
-            </content>
-        </ScrollPane>
+        <StackPane styleClass="content-area">
+            
+            <VBox fx:id="loadingState" alignment="CENTER" spacing="10" visible="false" managed="false">
+                <ProgressIndicator />
+                <Label text="Loading properties..." styleClass="text-secondary"/>
+            </VBox>
+            
+            <VBox fx:id="emptyState" alignment="CENTER" spacing="16" visible="false" managed="false">
+                <Label text="No properties found" styleClass="text-h2"/>
+                <Label text="Try adjusting your filters or search terms." styleClass="text-secondary"/>
+                <Button text="Reset Filters" onAction="#handleResetFilters" styleClass="button-secondary"/>
+            </VBox>
+            
+            <VBox fx:id="errorState" alignment="CENTER" spacing="16" visible="false" managed="false">
+                <Label text="Error Loading Properties" styleClass="text-h2"/>
+                <Label text="Unable to load the property list." styleClass="text-secondary"/>
+                <Button text="Retry" onAction="#handleApplyFilters" styleClass="button-primary"/>
+            </VBox>
+
+            <ScrollPane fx:id="contentScroll" fitToWidth="true" styleClass="edge-to-edge">
+                <VBox spacing="20">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label text="Properties for Rent" styleClass="text-h1"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="resultCountLabel" text="0 results" styleClass="text-secondary"/>
+                    </HBox>
+                    <TilePane fx:id="grid" hgap="24" vgap="24" prefColumns="3" styleClass="card-grid" />
+                </VBox>
+            </ScrollPane>
+
+        </StackPane>
     </center>
 
 </BorderPane>

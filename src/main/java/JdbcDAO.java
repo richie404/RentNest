@@ -1,3 +1,6 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -5,6 +8,7 @@ import java.util.*;
 
 /** Package-private persistence infrastructure; JDBC objects never reach controllers. */
 final class JdbcDAO {
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcDAO.class);
     private static final ThreadLocal<Connection> TRANSACTION = new ThreadLocal<>();
     @FunctionalInterface interface Mapper<T> { T map(ResultSet row) throws SQLException; }
     @FunctionalInterface interface Work<T> { T run(Connection connection) throws SQLException; }
@@ -14,10 +18,16 @@ final class JdbcDAO {
         Connection transaction = TRANSACTION.get();
         if (transaction != null) {
             try { return work.run(transaction); }
-            catch (SQLException e) { throw new DataAccessException("Database operation failed", e); }
+            catch (SQLException e) {
+                LOG.error("Database operation failed inside existing transaction", e);
+                throw new DataAccessException("Database operation failed", e);
+            }
         }
         try (Connection c = Database.getConnection()) { return work.run(c); }
-        catch (SQLException e) { throw new DataAccessException("Database operation failed", e); }
+        catch (SQLException e) {
+            LOG.error("Database operation failed", e);
+            throw new DataAccessException("Database operation failed", e);
+        }
     }
     static <T> T transaction(Work<T> work) {
         return transaction(null, work);
@@ -33,7 +43,10 @@ final class JdbcDAO {
                 c.commit();
                 return value;
             } catch (SQLException | RuntimeException | Error failure) {
-                try { c.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
+                try { c.rollback(); } catch (SQLException rollback) {
+                    LOG.error("Rollback failed after transaction error", rollback);
+                    failure.addSuppressed(rollback);
+                }
                 throw failure;
             } finally {
                 TRANSACTION.remove();

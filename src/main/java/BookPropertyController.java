@@ -2,7 +2,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import java.time.LocalDate;
 
-public class BookPropertyController {
+public class BookPropertyController extends BaseController {
 
     @FXML private Label propertyName;
     @FXML private TextField renterNameField;
@@ -11,59 +11,86 @@ public class BookPropertyController {
     @FXML private DatePicker endDatePicker;
     @FXML private TextArea noteField;
 
+    @FXML private Label contactErrorLabel;
+    @FXML private Label startDateErrorLabel;
+    @FXML private Label endDateErrorLabel;
+
     private Listing listing;
     private final BookingService bookingService = new BookingService();
 
-    /* -----------------------------------------------------------
-       🔹 Confirm Booking
-       ----------------------------------------------------------- */
-    @FXML
-    private void handleConfirmBooking() {
-        try {
-            if (!SessionManager.isLoggedIn()) {
-                showAlert("Login Required", "Please log in to confirm booking.");
-                Router.goToLogin();
-                return;
-            }
+    private void clearErrors() {
+        if (contactErrorLabel != null) contactErrorLabel.setVisible(false);
+        if (startDateErrorLabel != null) startDateErrorLabel.setVisible(false);
+        if (endDateErrorLabel != null) endDateErrorLabel.setVisible(false);
+    }
 
-            if (listing == null) {
-                showAlert("Error", "No property selected for booking.");
-                return;
-            }
-
-            LocalDate startDate = startDatePicker.getValue();
-            if (startDate == null) {
-                showAlert("Missing Date", "Please select a booking start date.");
-                return;
-            }
-
-            if (bookingService.request(listing.getId(), startDate, endDatePicker.getValue())) {
-                showAlert("Booking Confirmed",
-                        "Your booking request has been sent to the property owner for approval.");
-                Router.goToDashboard();
-            } else {
-                showAlert("Unavailable", "This property is already booked for the selected period.");
-            }
-        } catch (IllegalArgumentException | SecurityException e) {
-            showAlert("Booking Not Created", e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Failed to create booking. Please try again.");
+    private void showError(Label label, String message) {
+        if (label != null) {
+            label.setText(message);
+            label.setVisible(true);
+            label.setManaged(true);
+        } else {
+            warn("Validation Error", message);
         }
     }
 
+    @FXML
+    private void handleConfirmBooking() {
+        clearErrors();
+        if (!requireLogin()) return;
 
-    /* -----------------------------------------------------------
-       🔹 Set selected listing from PropertyDetailsController
-       ----------------------------------------------------------- */
+        if (listing == null) {
+            warn("Missing Property", "No property selected for booking.");
+            return;
+        }
+        
+        boolean hasError = false;
+
+        String contact = renterContactField.getText();
+        if (contact == null || contact.trim().isEmpty()) {
+            showError(contactErrorLabel, "Contact number is required.");
+            hasError = true;
+        }
+
+        LocalDate startDate = startDatePicker.getValue();
+        if (startDate == null) {
+            showError(startDateErrorLabel, "Start date is required.");
+            hasError = true;
+        } else if (startDate.isBefore(LocalDate.now())) {
+            showError(startDateErrorLabel, "Start date cannot be in the past.");
+            hasError = true;
+        }
+
+        LocalDate endDate = endDatePicker.getValue();
+        if (endDate == null) {
+            showError(endDateErrorLabel, "End date is required.");
+            hasError = true;
+        } else if (startDate != null && !endDate.isAfter(startDate)) {
+            showError(endDateErrorLabel, "End date must be after start date.");
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        try {
+            if (bookingService.request(listing.getId(), startDate, endDate)) {
+                info("Booking Confirmed", "Your booking request has been sent to the property owner for approval.");
+                Router.goToDashboard();
+            } else {
+                showError(startDateErrorLabel, "This property is already booked for the selected period.");
+            }
+        } catch (ValidationException e) {
+            showError(startDateErrorLabel, e.getMessage());
+        } catch (Exception e) {
+            handleServiceError("create booking", e);
+        }
+    }
+
     public void setListing(Listing listing) {
         this.listing = listing;
         propertyName.setText(listing.getTitle());
     }
 
-    /* -----------------------------------------------------------
-       🔹 Back button
-       ----------------------------------------------------------- */
     @FXML
     private void handleBackToProperty() {
         try {
@@ -73,19 +100,8 @@ public class BookPropertyController {
                 Router.goToBrowse();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to navigate back from booking screen", e);
             Router.goToBrowse();
         }
-    }
-
-    /* -----------------------------------------------------------
-       🔹 Alert helper
-       ----------------------------------------------------------- */
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

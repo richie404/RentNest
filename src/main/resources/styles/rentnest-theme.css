@@ -1,0 +1,464 @@
+/* ==========================================================================
+   RentNest Design System — Primary Shared Theme
+   File: styles/rentnest-theme.css
+   Compatible with JavaFX 21+ CSS specification
+   Supports: Renter, Owner, and Admin workflows
+   ========================================================================== */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS (JavaFX Looked-Up Colors & Palette)
+   ────────────────────────────────────────────────────────────────────────── */
+.root {
+    /* Brand Colors (Burgundy Identity) */
+    -fx-primary: #6D1737;
+    -fx-primary-dark: #4E0F26;
+    -fx-primary-light: #F8E8EE;
+
+    /* Neutrals & Surfaces */
+    -fx-background: #F9FAFB;
+    -fx-surface: #FFFFFF;
+    -fx-surface-elevated: #FFFFFF;
+    -fx-surface-muted: #F3F4F6;
+
+    /* Typography Colors */
+    -fx-text-primary: #1F2937;
+    -fx-text-secondary: #6B7280;
+    -fx-text-muted: #9CA3AF;
+    -fx-text-on-primary: #FFFFFF;
+
+    /* Semantic Feedback Colors */
+    -fx-success: #10B981;
+    -fx-success-bg: #ECFDF5;
+    -fx-success-text: #065F46;
+
+    -fx-warning: #F59E0B;
+    -fx-warning-bg: #FEF3C7;
+    -fx-warning-text: #92400E;
+
+    -fx-danger: #EF4444;
+    -fx-danger-bg: #FEF2F2;
+    -fx-danger-text: #991B1B;
+
+    -fx-neutral-bg: #F3F4F6;
+    -fx-neutral-text: #4B5563;
+
+    /* Borders */
+    -fx-border-color-subtle: #E5E7EB;
+    -fx-border-color-medium: #D1D5DB;
+    -fx-border-color-focus: #6D1737;
+
+    /* Typography defaults */
+    -fx-font-family: "Segoe UI", "Inter", -apple-system, system-ui, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: -fx-background;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. TYPOGRAPHY HIERARCHY
+   ────────────────────────────────────────────────────────────────────────── */
+.text-display {
+    -fx-font-size: 32px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-h1 {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-h2 {
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-h3 {
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-body {
+    -fx-font-size: 14px;
+    -fx-font-weight: 400;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.text-body-small {
+    -fx-font-size: 12px;
+    -fx-font-weight: 400;
+    -fx-text-fill: -fx-text-secondary;
+}
+
+.text-caption {
+    -fx-font-size: 11px;
+    -fx-font-weight: 400;
+    -fx-text-fill: -fx-text-muted;
+}
+
+.text-primary-color {
+    -fx-text-fill: -fx-primary;
+}
+
+.text-secondary-color {
+    -fx-text-fill: -fx-text-secondary;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. SPACING CONVENTIONS (Gap & Padding utilities)
+   ────────────────────────────────────────────────────────────────────────── */
+.gap-4  { -fx-spacing: 4; }
+.gap-8  { -fx-spacing: 8; }
+.gap-12 { -fx-spacing: 12; }
+.gap-16 { -fx-spacing: 16; }
+.gap-24 { -fx-spacing: 24; }
+.gap-32 { -fx-spacing: 32; }
+.gap-48 { -fx-spacing: 48; }
+
+.p-4  { -fx-padding: 4; }
+.p-8  { -fx-padding: 8; }
+.p-12 { -fx-padding: 12; }
+.p-16 { -fx-padding: 16; }
+.p-24 { -fx-padding: 24; }
+.p-32 { -fx-padding: 32; }
+.p-48 { -fx-padding: 48; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   4. BUTTON COMPONENTS (.btn, .btn-primary, .btn-secondary, etc.)
+   ────────────────────────────────────────────────────────────────────────── */
+.btn {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 8 18;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+}
+
+/* Primary Button (Burgundy) */
+.btn-primary {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-text-on-primary;
+    -fx-effect: dropshadow(gaussian, rgba(109, 23, 55, 0.20), 6, 0.2, 0, 2);
+}
+.btn-primary:hover {
+    -fx-background-color: -fx-primary-dark;
+    -fx-effect: dropshadow(gaussian, rgba(109, 23, 55, 0.30), 8, 0.3, 0, 3);
+}
+.btn-primary:pressed {
+    -fx-background-color: #3B0B1D;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 2, 0, 0, 1);
+}
+.btn-primary:disabled {
+    -fx-opacity: 0.55;
+    -fx-cursor: default;
+}
+
+/* Secondary Button (Outlined Neutral) */
+.btn-secondary {
+    -fx-background-color: -fx-surface;
+    -fx-text-fill: -fx-text-primary;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 4, 0, 0, 1);
+}
+.btn-secondary:hover {
+    -fx-background-color: -fx-surface-muted;
+    -fx-border-color: -fx-primary;
+    -fx-text-fill: -fx-primary;
+}
+.btn-secondary:pressed {
+    -fx-background-color: -fx-primary-light;
+}
+.btn-secondary:disabled {
+    -fx-opacity: 0.55;
+    -fx-cursor: default;
+}
+
+/* Danger Button (Red Alert) */
+.btn-danger {
+    -fx-background-color: -fx-danger;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(239, 68, 68, 0.25), 6, 0.2, 0, 2);
+}
+.btn-danger:hover {
+    -fx-background-color: #DC2626;
+    -fx-effect: dropshadow(gaussian, rgba(239, 68, 68, 0.35), 8, 0.3, 0, 3);
+}
+.btn-danger:pressed {
+    -fx-background-color: #B91C1C;
+}
+
+/* Ghost Button (Border-free Subtle) */
+.btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-text-secondary;
+}
+.btn-ghost:hover {
+    -fx-background-color: -fx-primary-light;
+    -fx-text-fill: -fx-primary;
+}
+.btn-ghost:pressed {
+    -fx-background-color: #EED4DD;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   5. CARDS & CONTAINERS
+   ────────────────────────────────────────────────────────────────────────── */
+.card {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 12, 0.1, 0, 2);
+}
+
+.card-header {
+    -fx-padding: 16 20;
+    -fx-border-color: transparent transparent -fx-border-color-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center-left;
+}
+
+.card-body {
+    -fx-padding: 20;
+}
+
+.stat-card {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1;
+    -fx-padding: 20 24;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 8, 0.05, 0, 2);
+}
+.stat-card:hover {
+    -fx-border-color: -fx-primary-light;
+    -fx-effect: dropshadow(gaussian, rgba(109, 23, 55, 0.10), 12, 0.15, 0, 4);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   6. FORM CONTROLS (.form-control, .form-label, .form-error)
+   ────────────────────────────────────────────────────────────────────────── */
+.form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.form-error {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -fx-danger;
+}
+
+.form-control,
+.text-field,
+.password-field,
+.combo-box,
+.text-area {
+    -fx-font-size: 14px;
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1.5;
+    -fx-padding: 9 14;
+    -fx-text-fill: -fx-text-primary;
+    -fx-prompt-text-fill: -fx-text-muted;
+}
+
+.form-control:focused,
+.text-field:focused,
+.password-field:focused,
+.combo-box:focused,
+.text-area:focused {
+    -fx-border-color: -fx-border-color-focus;
+    -fx-effect: dropshadow(gaussian, rgba(109, 23, 55, 0.15), 6, 0.2, 0, 0);
+}
+
+.search-field {
+    -fx-font-size: 14px;
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1.5;
+    -fx-padding: 10 20;
+    -fx-prompt-text-fill: -fx-text-muted;
+}
+.search-field:focused {
+    -fx-border-color: -fx-primary;
+    -fx-effect: dropshadow(gaussian, rgba(109, 23, 55, 0.15), 8, 0.2, 0, 0);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   7. TABLE VIEW STYLING (.table-view)
+   ────────────────────────────────────────────────────────────────────────── */
+.table-view {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 8, 0, 0, 2);
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -fx-surface-muted;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 10 10 0 0;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 42px;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.table-row-cell {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: transparent transparent -fx-border-color-subtle transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-cell-size: 44px;
+    -fx-font-size: 14px;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: -fx-primary-light;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #F2DCE5;
+    -fx-text-fill: -fx-primary-dark;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: -fx-text-muted;
+    -fx-font-size: 14px;
+    -fx-font-style: italic;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   8. NAVIGATION & SIDEBAR (.top-nav, .sidebar, .sidebar-item)
+   ────────────────────────────────────────────────────────────────────────── */
+.top-nav {
+    -fx-background-color: -fx-primary;
+    -fx-padding: 14 28;
+    -fx-spacing: 20;
+    -fx-alignment: center-left;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 10, 0.2, 0, 3);
+}
+
+.top-nav .brand-title {
+    -fx-text-fill: -fx-text-on-primary;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+
+.sidebar {
+    -fx-background-color: -fx-surface;
+    -fx-border-color: transparent -fx-border-color-subtle transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 24 16;
+    -fx-spacing: 8;
+}
+
+.sidebar-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-text-fill: -fx-text-secondary;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-padding: 10 16;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+.sidebar-item:hover {
+    -fx-background-color: -fx-primary-light;
+    -fx-text-fill: -fx-primary;
+}
+
+.sidebar-item-active {
+    -fx-background-color: -fx-primary-light;
+    -fx-text-fill: -fx-primary;
+    -fx-font-weight: 700;
+    -fx-border-color: -fx-primary transparent transparent transparent;
+    -fx-border-width: 0 0 0 3;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   9. STATUS BADGES (.badge, .badge-success, .badge-warning, etc.)
+   ────────────────────────────────────────────────────────────────────────── */
+.badge {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-padding: 4 10;
+    -fx-alignment: center;
+}
+
+.badge-success {
+    -fx-background-color: -fx-success-bg;
+    -fx-text-fill: -fx-success-text;
+}
+
+.badge-warning {
+    -fx-background-color: -fx-warning-bg;
+    -fx-text-fill: -fx-warning-text;
+}
+
+.badge-danger {
+    -fx-background-color: -fx-danger-bg;
+    -fx-text-fill: -fx-danger-text;
+}
+
+.badge-neutral {
+    -fx-background-color: -fx-neutral-bg;
+    -fx-text-fill: -fx-neutral-text;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   10. MODALS & EMPTY STATES (.modal, .empty-state)
+   ────────────────────────────────────────────────────────────────────────── */
+.modal {
+    -fx-background-color: -fx-surface;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: -fx-border-color-subtle;
+    -fx-border-width: 1;
+    -fx-padding: 28;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.20), 24, 0.2, 0, 8);
+}
+
+.empty-state {
+    -fx-alignment: center;
+    -fx-padding: 48 32;
+    -fx-spacing: 12;
+}
+
+.empty-state-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -fx-text-primary;
+}
+
+.empty-state-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -fx-text-secondary;
+}

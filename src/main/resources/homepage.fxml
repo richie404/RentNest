@@ -6,162 +6,215 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="HomepageController"
-            stylesheets="@homepage.css">
+            stylesheets="@homepage.css"
+            styleClass="homepage-root">
 
-    <!-- ===== Top: Header + Search Bar ===== -->
+    <!-- ═══════════════════════════════════════════════════════════
+         TOP NAVIGATION BAR
+         ═══════════════════════════════════════════════════════════ -->
     <top>
-        <VBox spacing="12">
-
-            <!-- Header -->
-            <HBox spacing="18" alignment="CENTER_LEFT"
-                  style="-fx-background-color: #591734; -fx-padding: 20 32 20 32;">
-                <Label fx:id="welcomeLabel" text="Welcome to RentNest 🏠"
-                       minWidth="0" wrapText="true" HBox.hgrow="ALWAYS"
-                       style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: 800;"/>
-
-                <Pane HBox.hgrow="ALWAYS"/>
-
-                <Hyperlink fx:id="loginLink"
-                           managed="${loginLink.visible}"
-                           text="Login" onAction="#handleLogin"
-                           style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
-                                  -fx-font-weight: 700; -fx-font-size: 15px;
-                                  -fx-padding: 10 20; -fx-border-color: rgba(255, 255, 255, 0.3);
-                                  -fx-border-width: 2; -fx-border-radius: 16; -fx-background-radius: 16;"/>
-
-                <Hyperlink fx:id="registerLink"
-                           managed="${registerLink.visible}"
-                           text="Register" onAction="#handleRegister"
-                           style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
-                                  -fx-font-weight: 700; -fx-font-size: 15px;
-                                  -fx-padding: 10 20; -fx-border-color: rgba(255, 255, 255, 0.3);
-                                  -fx-border-width: 2; -fx-border-radius: 16; -fx-background-radius: 16;"/>
-
-                <Hyperlink fx:id="logoutLink"
-                           managed="${logoutLink.visible}"
-                           text="Logout" onAction="#handleLogout"
-                           visible="false"
-                           style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
-                                  -fx-font-weight: 600; -fx-font-size: 15px; -fx-padding: 8 16;"/>
-
-                <Hyperlink fx:id="chatLink"
-                           text="💬 Chat Assistant" onAction="#handleChat"
-                           style="-fx-text-fill: rgba(255, 255, 255, 0.9); -fx-underline: false;
-                                  -fx-font-weight: 600; -fx-font-size: 15px; -fx-padding: 8 16;"/>
+        <HBox alignment="CENTER_LEFT" styleClass="top-nav-bar">
+            <!-- Brand & Logo -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="🏠" styleClass="brand-icon"/>
+                <Label text="RentNest" styleClass="brand-name"/>
             </HBox>
 
-            <!-- Search Bar Section -->
-            <HBox spacing="8" alignment="CENTER" styleClass="hero">
-                <TextField fx:id="searchField" promptText="Search by title or location…" prefWidth="560" maxWidth="560" minWidth="0" HBox.hgrow="ALWAYS"/>
-                <Button text="Search" onAction="#handleSearch" styleClass="btn btn-primary"/>
+            <Region prefWidth="28"/>
+
+            <!-- Navigation Links -->
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Button text="Browse Properties" onAction="#handleBrowse" styleClass="nav-link"/>
+                <Button text="About" onAction="#handleLearnMore" styleClass="nav-link"/>
             </HBox>
-        </VBox>
+
+            <Pane HBox.hgrow="ALWAYS"/>
+
+            <!-- Right Actions & Authentication State -->
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+                <Button fx:id="chatButton" text="💬 Chat Assistant" onAction="#handleChat" styleClass="btn btn-ghost"/>
+
+                <!-- Logged-out actions -->
+                <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin" styleClass="btn btn-secondary"/>
+                <Button fx:id="registerButton" text="Create Account" onAction="#handleRegister" styleClass="btn btn-primary"/>
+
+                <!-- Logged-in actions -->
+                <Label fx:id="userGreetingLabel" visible="false" managed="${userGreetingLabel.visible}" styleClass="user-greeting"/>
+                <Button fx:id="dashboardButton" visible="false" managed="${dashboardButton.visible}" text="My Dashboard" onAction="#handleDashboard" styleClass="btn btn-secondary"/>
+                <Button fx:id="logoutButton" visible="false" managed="${logoutButton.visible}" text="Logout" onAction="#handleLogout" styleClass="btn btn-ghost"/>
+            </HBox>
+        </HBox>
     </top>
 
-    <!-- ===== Center: Scrollable Content ===== -->
+    <!-- ═══════════════════════════════════════════════════════════
+         CENTER: SCROLLABLE MAIN CONTENT
+         ═══════════════════════════════════════════════════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="scroller">
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" styleClass="main-scroll-pane">
             <content>
-                <VBox alignment="TOP_CENTER" spacing="50">
+                <VBox alignment="TOP_CENTER" spacing="48" styleClass="content-container">
 
-                    <!-- === Intro Section (Find Your Perfect Home) === -->
-                    <VBox alignment="CENTER" spacing="18"
-                          style="-fx-background-color: #E6D5E9;
-                                 -fx-padding: 60 20; -fx-background-radius: 0 0 30 30;">
-                        <Label text="Find Your Perfect Home"
-                               style="-fx-text-fill: #591734; -fx-font-size: 36px; -fx-font-weight: 800;"/>
-                        <Label text="Browse thousands of verified listings and discover a place that fits your lifestyle perfectly."
-                               wrapText="true"
-                               style="-fx-text-fill: #4a132b; -fx-font-size: 16px; -fx-font-weight: 500;"/>
-                        <Button text="Browse Properties"
-                                onAction="#handleBrowse"
-                                styleClass="hero-btn"/>
+                    <!-- HERO SECTION -->
+                    <VBox alignment="CENTER" spacing="28" styleClass="hero-section">
+                        <VBox alignment="CENTER" spacing="12" maxWidth="820">
+                            <Label text="Find a place that feels like home." styleClass="hero-title" wrapText="true" textAlignment="CENTER"/>
+                            <Label text="Discover thousands of verified apartments, flats, and homes with transparent pricing, instant booking, and direct landlord communication."
+                                   styleClass="hero-subtitle" wrapText="true" textAlignment="CENTER"/>
+                        </VBox>
+
+                        <!-- Large Search Panel -->
+                        <VBox styleClass="search-panel" maxWidth="940" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER" spacing="16">
+                                <!-- Location / Keyword -->
+                                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                    <Label text="LOCATION / KEYWORD" styleClass="search-field-label"/>
+                                    <TextField fx:id="searchField" promptText="Enter city, neighborhood, or title..." styleClass="search-input"/>
+                                </VBox>
+
+                                <!-- Property Type -->
+                                <VBox spacing="4" prefWidth="180">
+                                    <Label text="PROPERTY TYPE" styleClass="search-field-label"/>
+                                    <ComboBox fx:id="propertyTypeCombo" promptText="All Types" styleClass="search-combo" maxWidth="Infinity"/>
+                                </VBox>
+
+                                <!-- Price Range -->
+                                <VBox spacing="4" prefWidth="190">
+                                    <Label text="PRICE RANGE" styleClass="search-field-label"/>
+                                    <ComboBox fx:id="priceRangeCombo" promptText="Any Price" styleClass="search-combo" maxWidth="Infinity"/>
+                                </VBox>
+
+                                <!-- Submit CTA -->
+                                <VBox alignment="BOTTOM_CENTER">
+                                    <Button text="Search 🔍" onAction="#handleSearch" styleClass="btn btn-primary search-submit-btn"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
                     </VBox>
 
-                    <!-- === Featured Section === -->
-                    <VBox alignment="CENTER" spacing="6" style="-fx-padding: 40 0 20 0;">
-                        <Label text="Featured Properties"
-                               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #591734;"/>
-                        <Label text="Check out our most popular listings"
-                               style="-fx-text-fill: #666666; -fx-font-size: 15px;"/>
+                    <!-- FEATURED PROPERTIES SECTION -->
+                    <VBox spacing="20" maxWidth="1160" HBox.hgrow="ALWAYS" styleClass="featured-container">
+                        <!-- Section Header -->
+                        <HBox alignment="CENTER_LEFT" spacing="16">
+                            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                                <Label text="Featured Properties" styleClass="section-heading"/>
+                                <Label text="Explore verified rentals handpicked for quality, comfort, and value" styleClass="section-subheading"/>
+                            </VBox>
+                            <Button text="Browse All Properties →" onAction="#handleBrowse" styleClass="btn btn-ghost text-primary-color"/>
+                        </HBox>
+
+                        <!-- Content Stack: Loading, Empty, Error, and Grid views -->
+                        <StackPane fx:id="contentStack" minHeight="260">
+                            <!-- Loading State -->
+                            <VBox fx:id="loadingState" alignment="CENTER" spacing="16" styleClass="state-box" visible="false">
+                                <ProgressIndicator prefWidth="40" prefHeight="40"/>
+                                <Label text="Loading featured properties..." styleClass="state-message"/>
+                            </VBox>
+
+                            <!-- Empty State -->
+                            <VBox fx:id="emptyState" alignment="CENTER" spacing="14" styleClass="state-box" visible="false">
+                                <Label text="🏡" styleClass="state-icon"/>
+                                <Label text="No Featured Listings Right Now" styleClass="state-title"/>
+                                <Label text="We're currently updating our listings catalog. Explore all available rentals." styleClass="state-subtitle"/>
+                                <Button text="Browse All Rentals" onAction="#handleBrowse" styleClass="btn btn-primary"/>
+                            </VBox>
+
+                            <!-- Error / Failure State with Retry Option -->
+                            <VBox fx:id="errorState" alignment="CENTER" spacing="14" styleClass="state-box" visible="false">
+                                <Label text="⚠️" styleClass="state-icon"/>
+                                <Label text="Unable to Load Properties" styleClass="state-title"/>
+                                <Label fx:id="errorMessageLabel" text="A connection error occurred while loading featured rentals." styleClass="state-subtitle"/>
+                                <HBox alignment="CENTER" spacing="12">
+                                    <Button text="Retry 🔄" onAction="#handleRetry" styleClass="btn btn-primary"/>
+                                    <Button text="Browse Properties" onAction="#handleBrowse" styleClass="btn btn-secondary"/>
+                                </HBox>
+                            </VBox>
+
+                            <!-- Grid State -->
+                            <TilePane fx:id="featuredGrid" hgap="20" vgap="24" alignment="TOP_CENTER" prefColumns="3" prefTileWidth="300" minWidth="0">
+                                <padding><Insets top="8" right="8" bottom="16" left="8"/></padding>
+                            </TilePane>
+                        </StackPane>
                     </VBox>
 
-                    <TilePane fx:id="featuredGrid" hgap="20" vgap="20" alignment="TOP_CENTER" prefColumns="3" prefTileWidth="320" minWidth="0">
-                        <padding><Insets top="10" right="20" bottom="30" left="20"/></padding>
-                    </TilePane>
-
-                    <!-- === How It Works Section === -->
-                    <VBox alignment="CENTER" spacing="16" styleClass="how-section">
-                        <Label text="How It Works" styleClass="section-title"/>
-                        <Label text="Simple steps to find your perfect home" styleClass="section-subtitle"/>
+                    <!-- HOW IT WORKS SECTION -->
+                    <VBox alignment="CENTER" spacing="20" maxWidth="1160" HBox.hgrow="ALWAYS" styleClass="how-section">
+                        <VBox alignment="CENTER" spacing="6">
+                            <Label text="How RentNest Works" styleClass="section-heading"/>
+                            <Label text="Simplifying your rental experience in three transparent steps" styleClass="section-subheading"/>
+                        </VBox>
                         <FlowPane hgap="24" vgap="24" alignment="CENTER">
-                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
+                            <VBox alignment="CENTER" spacing="12" prefWidth="300" maxWidth="300" styleClass="how-card">
                                 <Label text="🔍" styleClass="how-icon"/>
-                                <Label text="Browse Listings" styleClass="how-card-title"/>
-                                <Label text="Search thousands of verified listings that match your needs."
+                                <Label text="1. Browse &amp; Filter" styleClass="how-card-title"/>
+                                <Label text="Search verified properties by location, bedrooms, amenities, and budget with no hidden fees."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
-                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
-                                <Label text="🏡" styleClass="how-icon"/>
-                                <Label text="View Details" styleClass="how-card-title"/>
-                                <Label text="See property details, photos, and amenities instantly."
+                            <VBox alignment="CENTER" spacing="12" prefWidth="300" maxWidth="300" styleClass="how-card">
+                                <Label text="💬" styleClass="how-icon"/>
+                                <Label text="2. Chat with Landlords" styleClass="how-card-title"/>
+                                <Label text="Connect securely with property owners in real time to ask questions and schedule viewings."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
-                            <VBox alignment="CENTER" spacing="10" prefWidth="280" maxWidth="280" styleClass="how-card">
+                            <VBox alignment="CENTER" spacing="12" prefWidth="300" maxWidth="300" styleClass="how-card">
                                 <Label text="📝" styleClass="how-icon"/>
-                                <Label text="Book or Contact" styleClass="how-card-title"/>
-                                <Label text="Chat with the owner or schedule a visit — all in one place."
+                                <Label text="3. Book Seamlessly" styleClass="how-card-title"/>
+                                <Label text="Submit your booking request directly online with transparent agreements and instant status updates."
                                        styleClass="how-card-text" wrapText="true"/>
                             </VBox>
                         </FlowPane>
                     </VBox>
 
-                    <!-- === CTA Section === -->
-                    <HBox alignment="CENTER" spacing="40" styleClass="cta-section">
-                        <VBox alignment="CENTER_LEFT" spacing="12" maxWidth="650" minWidth="0" HBox.hgrow="ALWAYS">
-                            <Label text="Join the Future of Renting" styleClass="cta-title"/>
-                            <Label text="Whether you're looking for your next home or want to showcase your property to the right tenants — RentNest makes it effortless. Start your journey today."
-                                   styleClass="cta-subtitle" wrapText="true"/>
-                            <HBox spacing="14">
-                                <Button text="Sign Up Now" onAction="#handleRegister" styleClass="cta-button-primary"/>
-                                <Button text="Learn More" onAction="#handleLearnMore" styleClass="cta-button-secondary"/>
+                    <!-- CTA BANNER SECTION -->
+                    <VBox maxWidth="1160" HBox.hgrow="ALWAYS" style="-fx-padding: 0 24;">
+                        <HBox alignment="CENTER_LEFT" spacing="32" styleClass="cta-banner">
+                            <VBox alignment="CENTER_LEFT" spacing="10" HBox.hgrow="ALWAYS">
+                                <Label text="List Your Property on RentNest" styleClass="cta-title"/>
+                                <Label text="Reach verified tenants across the country. Fast onboarding, transparent booking requests, and dedicated support."
+                                       styleClass="cta-subtitle" wrapText="true"/>
+                            </VBox>
+                            <HBox spacing="14" alignment="CENTER_RIGHT">
+                                <Button text="Get Started" onAction="#handleRegister" styleClass="btn btn-secondary"/>
+                                <Button text="Learn More" onAction="#handleLearnMore" styleClass="btn btn-ghost" style="-fx-text-fill: white;"/>
                             </HBox>
-                        </VBox>
-                    </HBox>
+                        </HBox>
+                    </VBox>
 
-                    <!-- === Footer (Inside ScrollPane) === -->
-                    <VBox alignment="CENTER" spacing="12"
-                          style="-fx-background-color: #D3D3D3;
-                                 -fx-padding: 20 0;
-                                 -fx-border-color: #c2c2c2;
-                                 -fx-border-width: 1 0 0 0;">
-                        <HBox alignment="CENTER" spacing="80">
-                            <VBox alignment="TOP_LEFT" spacing="4">
-                                <Label text="Company" style="-fx-text-fill:#591734; -fx-font-size:15; -fx-font-weight:700;"/>
-                                <Hyperlink text="About"    style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Careers"  style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Blog"     style="-fx-text-fill:#591734; -fx-underline:false;"/>
+                    <!-- FOOTER SECTION -->
+                    <VBox alignment="CENTER" spacing="24" styleClass="footer-section">
+                        <HBox alignment="TOP_CENTER" spacing="90" maxWidth="1160">
+                            <VBox spacing="10" prefWidth="260">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label text="🏠" styleClass="brand-icon"/>
+                                    <Label text="RentNest" styleClass="brand-name"/>
+                                </HBox>
+                                <Label text="Your trusted digital marketplace for authentic, verified residential and commercial rentals."
+                                       styleClass="footer-copyright" wrapText="true"/>
                             </VBox>
 
-                            <VBox alignment="TOP_LEFT" spacing="4">
-                                <Label text="Support" style="-fx-text-fill:#591734; -fx-font-size:15; -fx-font-weight:700;"/>
-                                <Hyperlink text="Help Center" style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Safety"      style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Contact Us"  style="-fx-text-fill:#591734; -fx-underline:false;"/>
+                            <VBox spacing="8">
+                                <Label text="COMPANY" styleClass="footer-heading"/>
+                                <Button text="About RentNest" onAction="#handleLearnMore" styleClass="footer-link"/>
+                                <Button text="Browse Listings" onAction="#handleBrowse" styleClass="footer-link"/>
                             </VBox>
 
-                            <VBox alignment="TOP_LEFT" spacing="4">
-                                <Label text="Legal" style="-fx-text-fill:#591734; -fx-font-size:15; -fx-font-weight:700;"/>
-                                <Hyperlink text="Terms"   style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Privacy" style="-fx-text-fill:#591734; -fx-underline:false;"/>
-                                <Hyperlink text="Cookies" style="-fx-text-fill:#591734; -fx-underline:false;"/>
+                            <VBox spacing="8">
+                                <Label text="PORTAL" styleClass="footer-heading"/>
+                                <Button text="Sign In" onAction="#handleLogin" styleClass="footer-link"/>
+                                <Button text="Create Account" onAction="#handleRegister" styleClass="footer-link"/>
+                                <Button text="Chat Assistant" onAction="#handleChat" styleClass="footer-link"/>
+                            </VBox>
+
+                            <VBox spacing="8">
+                                <Label text="SUPPORT" styleClass="footer-heading"/>
+                                <Label text="support@rentnest.com" styleClass="footer-link"/>
+                                <Label text="Dhaka, Bangladesh" styleClass="footer-link"/>
                             </VBox>
                         </HBox>
 
-                        <Separator/>
-                        <HBox alignment="CENTER" style="-fx-background-color: #D3D3D3;">
-                            <Label text="© 2025 RentNest — All rights reserved."
-                                   style="-fx-text-fill:#591734; -fx-font-size:12px; -fx-padding:10 0 8 0;"/>
+                        <Separator maxWidth="1160"/>
+
+                        <HBox alignment="CENTER">
+                            <Label text="© 2026 RentNest Platform. Built for seamless property rentals." styleClass="footer-copyright"/>
                         </HBox>
                     </VBox>
 

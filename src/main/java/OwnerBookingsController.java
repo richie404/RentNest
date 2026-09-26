@@ -3,11 +3,11 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-public class OwnerBookingsController {
+public class OwnerBookingsController extends BaseController {
 
     @FXML private TableView<Booking> bookingTable;
     @FXML private TableColumn<Booking, Integer> colId;
-    @FXML private TableColumn<Booking, Integer> colProperty; // ✅ renamed to match FXML
+    @FXML private TableColumn<Booking, Integer> colProperty;
     @FXML private TableColumn<Booking, Integer> colRenter;
     @FXML private TableColumn<Booking, java.time.LocalDate> colStart;
     @FXML private TableColumn<Booking, java.time.LocalDate> colEnd;
@@ -44,71 +44,67 @@ public class OwnerBookingsController {
                     FXCollections.observableArrayList(bookingService.findByOwner(ownerId));
             bookingTable.setItems(bookings);
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Unable to load bookings: " + e.getMessage());
+            handleServiceError("load owner bookings", e);
         }
     }
 
     @FXML
     private void handleApprove() {
+        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Select a booking to approve.");
+            return;
+        }
+
         try {
-            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                showAlert("No Selection", "Select a booking to approve.");
-                return;
-            }
-
             if (bookingService.updateStatus(selected.getId(), BookingStatus.CONFIRMED)) {
-                showAlert("✅ Approved", "Booking confirmed successfully.");
+                info("Approved", "Booking confirmed successfully.");
                 loadBookings();
-
             } else {
-                showAlert("Error", "Failed to approve booking.");
+                warn("Error", "Failed to approve booking.");
             }
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
+        } catch (Exception e) {
+            handleServiceError("approve booking", e);
+        }
     }
 
     @FXML
     private void handleReject() {
-        try {
-            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                showAlert("No Selection", "Select a booking to reject.");
-                return;
-            }
+        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Select a booking to reject.");
+            return;
+        }
 
+        try {
             if (bookingService.updateStatus(selected.getId(), BookingStatus.REJECTED)) {
-                showAlert("❌ Rejected", "Booking request rejected.");
+                info("Rejected", "Booking request rejected.");
                 loadBookings();
             } else {
-                showAlert("Error", "Failed to reject booking.");
+                warn("Error", "Failed to reject booking.");
             }
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
+        } catch (Exception e) {
+            handleServiceError("reject booking", e);
+        }
     }
 
     @FXML
     private void handleCancel() {
-        try {
-            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                showAlert("No Selection", "Select a booking to cancel.");
-                return;
-            }
+        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Select a booking to cancel.");
+            return;
+        }
 
+        try {
             if (bookingService.updateStatus(selected.getId(), BookingStatus.CANCELLED)) {
-                showAlert("Cancelled", "Booking cancelled successfully.");
+                info("Cancelled", "Booking cancelled successfully.");
                 loadBookings();
             } else {
-                showAlert("Error", "Failed to cancel booking.");
+                warn("Error", "Failed to cancel booking.");
             }
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        } catch (Exception e) {
+            handleServiceError("cancel booking", e);
+        }
     }
 }

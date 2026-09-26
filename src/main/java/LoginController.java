@@ -1,17 +1,18 @@
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Optional;
 import javafx.util.Pair;
 
 public class LoginController {
 
-    @FXML
-    private TextField emailField;
+    private static final Logger LOG = LoggerFactory.getLogger(LoginController.class);
 
-    @FXML
-    private PasswordField passwordField;
-
+    @FXML private TextField emailField;
+    @FXML private PasswordField passwordField;
 
     // ✅ Normal Login
     @FXML
@@ -27,16 +28,15 @@ public class LoginController {
         try {
             Optional<User> u = SessionManager.login(email, pass, false);
             if (u.isEmpty()) {
+                // SessionManager already logs the failed attempt at WARN
                 showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid email or password.");
                 return;
             }
 
             User user = u.get();
-
-            // ✅ Save the logged-in user globally (using SessionManager)
             passwordField.clear();
 
-            // ✅ Route based on role
+            // Route based on role
             if (user.getRole() == Role.OWNER) {
                 Router.goToOwnerDashboard();
             } else if (user.getRole() == Role.RENTER) {
@@ -44,11 +44,17 @@ public class LoginController {
             } else if (user.getRole() == Role.ADMIN) {
                 Router.goToAdminDashboard();
             } else {
+                LOG.warn("Logged-in user has unknown role: userId={} role={}", user.getId(), user.getRole());
                 showAlert(Alert.AlertType.WARNING, "Access Denied", "Unknown user role.");
             }
 
+        } catch (DatabaseOperationException | DataAccessException e) {
+            LOG.error("Database error during login", e);
+            showAlert(Alert.AlertType.ERROR, "Service Unavailable",
+                    "Login could not be completed. Please try again.");
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Something went wrong: " + e.getMessage());
+            LOG.error("Unexpected error during login", e);
+            showAlert(Alert.AlertType.ERROR, "Error", "An unexpected error occurred. Please try again.");
         }
     }
 
@@ -65,11 +71,9 @@ public class LoginController {
         dialog.setTitle("Admin Login");
         dialog.setHeaderText("Enter Admin Credentials");
 
-        // Buttons
         ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
-        // Fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -108,22 +112,20 @@ public class LoginController {
             try {
                 Optional<User> userOpt = SessionManager.login(adminEmail, adminPassword, true);
                 if (userOpt.isEmpty()) {
+                    // SessionManager already logs the WARN
                     showAlert(Alert.AlertType.ERROR, "Access Denied", "Invalid email or password.");
                     return;
                 }
+                password.clear();
+                Router.goToAdminDashboard();
 
-                if (userOpt.isPresent()) {
-                    User admin = userOpt.get();
-
-                    // ✅ Store admin session using SessionManager
-                    password.clear();
-
-                    Router.goToAdminDashboard();
-                } else {
-                    showAlert(Alert.AlertType.ERROR, "Access Denied", "No admin account found with this email.");
-                }
+            } catch (DatabaseOperationException | DataAccessException e) {
+                LOG.error("Database error during admin login", e);
+                showAlert(Alert.AlertType.ERROR, "Service Unavailable",
+                        "Login could not be completed. Please try again.");
             } catch (Exception e) {
-                showAlert(Alert.AlertType.ERROR, "Database Error", e.getMessage());
+                LOG.error("Unexpected error during admin login", e);
+                showAlert(Alert.AlertType.ERROR, "Error", "An unexpected error occurred. Please try again.");
             }
         });
     }
@@ -135,9 +137,9 @@ public class LoginController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
     @FXML
     private void handleBackToHome() {
         Router.goToHomepage();
     }
-
 }

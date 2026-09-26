@@ -60,6 +60,7 @@
                             <TextField fx:id="renterContactField"
                                        promptText="Enter your phone number"
                                        styleClass="text-field"/>
+                            <Label fx:id="contactErrorLabel" styleClass="text-error" visible="false" managed="false"/>
                         </VBox>
 
                         <!-- Start Date -->
@@ -76,6 +77,7 @@
                                             styleClass="date-picker"
                                             style="-fx-cursor: hand;"/>
                             </HBox>
+                            <Label fx:id="startDateErrorLabel" styleClass="text-error" visible="false" managed="false"/>
                         </VBox>
 
                         <VBox styleClass="form-section">
@@ -84,6 +86,7 @@
                                         promptText="Select booking end date"
                                         styleClass="date-picker"
                                         style="-fx-cursor: hand;"/>
+                            <Label fx:id="endDateErrorLabel" styleClass="text-error" visible="false" managed="false"/>
                         </VBox>
 
                         <!-- Notes -->

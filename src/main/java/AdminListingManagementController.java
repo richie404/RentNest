@@ -3,7 +3,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import java.util.List;
 
-public class AdminListingManagementController {
+public class AdminListingManagementController extends BaseController {
 
     @FXML private TableView<Listing> listingTable;
     @FXML private TableColumn<Listing, String> colTitle;
@@ -26,51 +26,61 @@ public class AdminListingManagementController {
     }
 
     private void loadListings() {
-        List<Listing> listings = adminService.getAllListings();
-        listingTable.setItems(FXCollections.observableArrayList(listings));
+        try {
+            List<Listing> listings = adminService.getAllListings();
+            listingTable.setItems(FXCollections.observableArrayList(listings));
+        } catch (Exception e) {
+            handleServiceError("load admin listings", e);
+        }
     }
 
     @FXML
     private void handleApprove() {
-        try {
-            Listing selected = listingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) { showAlert("Select a listing first"); return; }
+        Listing selected = listingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Please select a listing first.");
+            return;
+        }
 
+        try {
             if (adminService.updateListingStatus(selected.getId(), ApprovalStatus.APPROVED.name())) {
-                showAlert("✅ Listing Approved!");
+                info("Success", "Listing approved successfully.");
                 loadListings();
+            } else {
+                warn("Failed", "Failed to approve listing.");
             }
-        } catch (RuntimeException e) { showAlert(e.getMessage()); }
+        } catch (Exception e) {
+            handleServiceError("approve listing", e);
+        }
     }
 
     @FXML
     private void handleViewDetails() {
-        // TODO: implement property details view popup
-        System.out.println("View details clicked (Listing Management)");
+        info("Property Details", "Detailed property view popup is under development.");
     }
 
     @FXML
     private void handleReject() {
-        try {
-            Listing selected = listingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) { showAlert("Select a listing first"); return; }
+        Listing selected = listingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Please select a listing first.");
+            return;
+        }
 
+        try {
             if (adminService.updateListingStatus(selected.getId(), ApprovalStatus.REJECTED.name())) {
-                showAlert("❌ Listing Rejected!");
+                info("Success", "Listing rejected.");
                 loadListings();
+            } else {
+                warn("Failed", "Failed to reject listing.");
             }
-        } catch (RuntimeException e) { showAlert(e.getMessage()); }
+        } catch (Exception e) {
+            handleServiceError("reject listing", e);
+        }
     }
 
     @FXML
     private void handleRefresh() {
         loadListings();
-    }
-
-    private void showAlert(String msg) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
     }
 }

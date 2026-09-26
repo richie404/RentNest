@@ -26,11 +26,23 @@
             <artifactId>HikariCP</artifactId>
             <version>7.0.2</version>
         </dependency>
+        <!-- SLF4J API + Logback implementation -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
+            <artifactId>slf4j-api</artifactId>
             <version>2.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.18</version>
             <scope>runtime</scope>
+        </dependency>
+        <!-- Bridge java.util.logging (used by HikariCP/JavaFX internals) into SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>2.0.17</version>
         </dependency>
 
         <!-- JavaFX -->
@@ -150,6 +162,7 @@
                     <include>**/*.png</include>
                     <include>**/*.jpg</include>
                     <include>db/migration/*.sql</include>
+                    <include>logback.xml</include>
                 </includes>
             </resource>
         </resources>

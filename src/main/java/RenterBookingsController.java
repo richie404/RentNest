@@ -3,7 +3,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-public class RenterBookingsController {
+public class RenterBookingsController extends BaseController {
 
     @FXML private TableView<Booking> bookingTable;
     @FXML private TableColumn<Booking, Integer> colBookingId;
@@ -20,12 +20,8 @@ public class RenterBookingsController {
     private final BookingService bookingService = new BookingService();
     private int renterId;
 
-    /* -----------------------------------------------------------
-       🔹 Initialization
-       ----------------------------------------------------------- */
     @FXML
     private void initialize() {
-        // Map table columns to Booking fields
         colBookingId.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getId()));
         colProperty.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getListingId()));
         colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getOwnerId()));
@@ -34,27 +30,20 @@ public class RenterBookingsController {
         colAmount.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getTotalAmount()));
         colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getDisplayStatus()));
 
-        // Load for logged-in renter if available
         int currentUser = (SessionManager.isLoggedIn() ? SessionManager.getLoggedInUser().getId() : -1);
         if (currentUser != -1) {
-            setRenterId(currentUser); // ✅ automatically triggers load
+            setRenterId(currentUser);
         }
     }
 
-    /* -----------------------------------------------------------
-       🔹 Setter - Called from Router after login
-       ----------------------------------------------------------- */
     public void setRenterId(int renterId) {
         this.renterId = renterId;
-        loadBookings(); // ✅ refresh data immediately
+        loadBookings();
     }
 
-    /* -----------------------------------------------------------
-       🔹 Load all bookings for this renter
-       ----------------------------------------------------------- */
     private void loadBookings() {
         if (renterId <= 0) {
-            showAlert("Error", "No renter logged in.");
+            warn("Not Logged In", "No renter logged in.");
             return;
         }
 
@@ -63,49 +52,42 @@ public class RenterBookingsController {
                     FXCollections.observableArrayList(bookingService.findByRenter(renterId));
             bookingTable.setItems(bookings);
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Unable to load bookings: " + e.getMessage());
+            handleServiceError("load renter bookings", e);
         }
     }
 
-    /* -----------------------------------------------------------
-       🔹 Handle Booking Cancellation
-       ----------------------------------------------------------- */
     @FXML
     private void handleCancel() {
-        try {
-            Booking selected = bookingTable.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                showAlert("No Selection", "Please select a booking to cancel.");
-                return;
-            }
+        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Please select a booking to cancel.");
+            return;
+        }
 
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Cancellation");
+        confirm.setHeaderText("Cancel Booking?");
+        confirm.setContentText("Are you sure you want to cancel this booking? This action cannot be undone.");
+        
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        try {
             boolean success = bookingService.cancelBooking(selected.getId());
             if (success) {
-                showAlert("Cancelled", "Your booking has been cancelled successfully.");
-                loadBookings(); // ✅ refresh table
+                info("Cancelled", "Your booking has been cancelled successfully.");
+                loadBookings();
             } else {
-                showAlert("Error", "Failed to cancel booking.");
+                warn("Error", "Failed to cancel booking.");
             }
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
+        } catch (Exception e) {
+            handleServiceError("cancel booking", e);
+        }
     }
 
-    /* -----------------------------------------------------------
-       🔹 Manual Refresh Button
-       ----------------------------------------------------------- */
     @FXML
     private void handleRefresh() {
         loadBookings();
-    }
-
-    /* -----------------------------------------------------------
-       🔹 Alert helper
-       ----------------------------------------------------------- */
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

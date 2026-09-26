@@ -3,7 +3,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import java.util.List;
 
-public class AdminUserManagementController {
+public class AdminUserManagementController extends BaseController {
 
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, Integer> colId;
@@ -28,55 +28,60 @@ public class AdminUserManagementController {
 
     private void loadUsers() {
         try {
-            List<User> users = adminService.getAllUsers(); // fetch all
+            List<User> users = adminService.getAllUsers();
             userTable.setItems(FXCollections.observableArrayList(users));
         } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error", "Unable to load users: " + e.getMessage());
+            handleServiceError("load users", e);
         }
     }
 
     @FXML
     private void handleBanUser() {
-        try {
-            User selected = userTable.getSelectionModel().getSelectedItem();
-            if (selected == null) { showAlert("No Selection", "Select a user to ban."); return; }
+        User selected = userTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Select a user to ban.");
+            return;
+        }
 
+        try {
             if (adminService.banUser(selected.getId())) {
-                showAlert("✅ Success", "User banned successfully!");
+                info("Success", "User banned successfully.");
                 loadUsers();
-            } else showAlert("Error", "Failed to ban user.");
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
+            } else {
+                warn("Failed", "Failed to ban user.");
+            }
+        } catch (Exception e) {
+            handleServiceError("ban user", e);
+        }
     }
 
     @FXML
     private void handleUnbanUser() {
-        try {
-            User selected = userTable.getSelectionModel().getSelectedItem();
-            if (selected == null) { showAlert("No Selection", "Select a user to unban."); return; }
+        User selected = userTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            warn("No Selection", "Select a user to unban.");
+            return;
+        }
 
+        try {
             if (adminService.unbanUser(selected.getId())) {
-                showAlert("✅ Success", "User unbanned successfully!");
+                info("Success", "User unbanned successfully.");
                 loadUsers();
-            } else showAlert("Error", "Failed to unban user.");
-        } catch (RuntimeException e) { showAlert("Action Failed", e.getMessage()); }
+            } else {
+                warn("Failed", "Failed to unban user.");
+            }
+        } catch (Exception e) {
+            handleServiceError("unban user", e);
+        }
     }
+
     @FXML
     private void handleViewDetails() {
-        // TODO: implement user detail popup or view
-        System.out.println("View details clicked (User Management)");
+        info("User Details", "User detail view is under development.");
     }
 
     @FXML
     private void handleRefresh() {
         loadUsers();
-    }
-
-    private void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
-        alert.showAndWait();
     }
 }

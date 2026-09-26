@@ -1,0 +1,6 @@
+2026-09-26 14:55:46.023 INFO  [JavaFX Application Thread] Main — RentNest starting up
+2026-09-26 14:55:46.043 DEBUG [JavaFX Application Thread] Router — Loading FXML: homepage.fxml
+2026-09-26 14:55:46.711 INFO  [JavaFX Application Thread] Database — Initialising HikariCP connection pool
+2026-09-26 14:55:46.806 INFO  [JavaFX Application Thread] Database — Connection pool ready
+2026-09-26 14:55:48.234 DEBUG [JavaFX Application Thread] Router — FXML loaded successfully: homepage.fxml
+2026-09-26 14:55:48.235 INFO  [JavaFX Application Thread] Main — RentNest UI initialised

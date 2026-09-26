@@ -5,78 +5,97 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="RenterDashboardController"
-            stylesheets="@RenterDashboard.css">
+            stylesheets="@RenterDashboard.css"
+            styleClass="dashboard-pane">
 
     <!-- 🔹 Shared Top Bar -->
     <top>
         <fx:include source="TopBar.fxml" fx:id="topBar"/>
     </top>
 
-    <!-- 🔹 Dashboard Tabs -->
+    <!-- 🔹 Sidebar Navigation -->
+    <left>
+        <VBox spacing="10" styleClass="sidebar">
+            <Label text="Menu" styleClass="sidebar-title"/>
+            <Button fx:id="btnDashboard" text="Dashboard" styleClass="sidebar-button, active" onAction="#showDashboard"/>
+            <Button fx:id="btnFavorites" text="My Favorites" styleClass="sidebar-button" onAction="#showFavorites"/>
+            <Button fx:id="btnBookings" text="My Bookings" styleClass="sidebar-button" onAction="#showBookings"/>
+            <Button fx:id="btnMessages" text="Messages" styleClass="sidebar-button" onAction="#showMessages"/>
+        </VBox>
+    </left>
+
+    <!-- 🔹 Main Content Area -->
     <center>
-        <TabPane minWidth="0" minHeight="0">
-            <tabs>
+        <StackPane fx:id="contentArea" styleClass="content-area">
+            
+            <!-- Dashboard View -->
+            <VBox fx:id="dashboardView" spacing="20" styleClass="view-section">
+                 <Label text="Welcome back!" styleClass="page-title"/>
+                 <Label text="Here is a summary of your renter activity." styleClass="page-description"/>
+                 
+                 <HBox spacing="20" styleClass="stats-container">
+                     <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                         <Label text="Saved Properties" styleClass="stat-title"/>
+                         <Label fx:id="savedPropertiesCount" text="0" styleClass="stat-value"/>
+                     </VBox>
+                     <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                         <Label text="Pending Bookings" styleClass="stat-title"/>
+                         <Label fx:id="pendingBookingsCount" text="0" styleClass="stat-value"/>
+                     </VBox>
+                     <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                         <Label text="Active Bookings" styleClass="stat-title"/>
+                         <Label fx:id="activeBookingsCount" text="0" styleClass="stat-value"/>
+                     </VBox>
+                     <VBox styleClass="stat-card" HBox.hgrow="ALWAYS">
+                         <Label text="Total Messages" styleClass="stat-title"/>
+                         <Label fx:id="unreadMessagesCount" text="0" styleClass="stat-value"/>
+                     </VBox>
+                 </HBox>
 
-                <!-- 🏡 Dashboard Tab -->
-                <Tab text="Dashboard" closable="false">
-                    <BorderPane>
+                 <HBox spacing="10" styleClass="actions-container">
+                     <Button text="Browse Properties" styleClass="button-primary" onAction="#handleBrowse"/>
+                 </HBox>
+            </VBox>
 
-                        <!-- 🔹 Header -->
-                        <top>
-                            <HBox spacing="20" styleClass="header">
-                                <padding>
-                                    <Insets top="20" right="20" bottom="20" left="20"/>
-                                </padding>
+            <!-- Favorites View -->
+            <VBox fx:id="favoritesView" spacing="20" styleClass="view-section" visible="false">
+                 <Label text="My Favorites" styleClass="page-title"/>
+                 <Label text="Properties you have saved for later." styleClass="page-description"/>
+                 
+                 <VBox fx:id="favoritesEmptyState" visible="false" managed="false" alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
+                      <Label text="No saved properties" styleClass="empty-title"/>
+                      <Label text="You haven't added any properties to your favorites yet." styleClass="empty-subtitle"/>
+                      <Button text="Browse Properties" styleClass="button-primary" onAction="#handleBrowse"/>
+                 </VBox>
 
+                 <ScrollPane fx:id="favoritesScroll" fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+                      <TilePane fx:id="favoritesGrid" hgap="20" vgap="20" prefColumns="3" styleClass="card-grid" />
+                 </ScrollPane>
+            </VBox>
 
-                                <Label text="🏡 Renter Dashboard" styleClass="label-title"/>
-                                <Pane HBox.hgrow="ALWAYS"/>
+            <!-- Bookings View -->
+            <VBox fx:id="bookingsView" spacing="20" styleClass="view-section" visible="false">
+                 <Label text="My Bookings" styleClass="page-title"/>
+                 <Label text="Manage your property bookings and requests." styleClass="page-description"/>
+                 <fx:include source="RenterBookings.fxml" fx:id="renterBookings" VBox.vgrow="ALWAYS"/>
+            </VBox>
 
-                                <Button text="Browse Properties"
-                                        onAction="#handleBrowse"
-                                        styleClass="button-secondary"/>
-                            </HBox>
-                        </top>
+            <!-- Messages View -->
+            <VBox fx:id="messagesView" spacing="20" styleClass="view-section" visible="false">
+                 <Label text="Messages" styleClass="page-title"/>
+                 <Label text="Your chat history with property owners." styleClass="page-description"/>
+                 
+                 <VBox fx:id="messagesEmptyState" visible="false" managed="false" alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
+                      <Label text="No messages" styleClass="empty-title"/>
+                      <Label text="You haven't sent or received any messages yet." styleClass="empty-subtitle"/>
+                 </VBox>
 
-                        <!-- 🔹 Favorites Section -->
-                        <center>
-                            <VBox spacing="15" alignment="TOP_CENTER" style="-fx-padding: 20;">
-                                <Label text="Favorite Properties"
-                                       styleClass="page-title"/>
-
-                                <ListView fx:id="favoritesList"
-                                          styleClass="list-view" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
-                            </VBox>
-                        </center>
-                    </BorderPane>
-                </Tab>
-
-                <!-- 💬 Messages Tab -->
-                <Tab text="Messages" closable="false">
-                    <VBox spacing="12" alignment="TOP_CENTER" style="-fx-padding: 20;">
-                        <Label text="Your Chat History"
-                               styleClass="page-title"/>
-
-                        <ListView fx:id="messageList"
-                                  styleClass="list-view" minWidth="0" minHeight="100" VBox.vgrow="ALWAYS"/>
-
-                        <HBox spacing="10" alignment="CENTER_RIGHT">
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Button text="💬 View Chat"
-                                    onAction="#handleViewChat"
-                                    styleClass="button-primary"/>
-                        </HBox>
-                    </VBox>
-                </Tab>
-
-                <!-- 📅 My Bookings Tab -->
-                <!-- 📅 My Bookings Tab -->
-                <Tab text="My Bookings" closable="false">
-                    <fx:include source="RenterBookings.fxml" fx:id="RenterBookingsController"/>
-                </Tab>
-
-
-            </tabs>
-        </TabPane>
+                 <ListView fx:id="messageList" styleClass="list-view" VBox.vgrow="ALWAYS" />
+                 
+                 <HBox alignment="CENTER_RIGHT" spacing="10">
+                      <Button fx:id="viewChatButton" text="View Chat" styleClass="button-primary" onAction="#handleViewChat" />
+                 </HBox>
+            </VBox>
+        </StackPane>
     </center>
 </BorderPane>

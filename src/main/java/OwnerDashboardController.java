@@ -146,8 +146,8 @@ public class OwnerDashboardController extends BaseController {
             stage.show();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            error("Chat Error", "Unable to open chat:\n" + e.getMessage());
+            log.error("Unable to open chat window", e);
+            error("Chat Error", "Unable to open chat window. Please try again.");
         }
     }
 

@@ -17,33 +17,33 @@ public class RegisterController extends BaseController {
 
     @FXML
     private void initialize() {
-        // Populate the role dropdown
         if (roleBox != null && roleBox.getItems().isEmpty()) {
             roleBox.getItems().addAll(Role.OWNER.name(), Role.RENTER.name());
-            roleBox.getSelectionModel().select(Role.RENTER.name()); // default role
+            roleBox.getSelectionModel().select(Role.RENTER.name());
         }
     }
 
     @FXML
     private void handleSubmitRegister() {
         String username = usernameField.getText().trim();
-        String email = emailField.getText().trim();
+        String email    = emailField.getText().trim();
         String password = passwordField.getText();
-        String role = roleBox.getValue();
+        String role     = roleBox.getValue();
 
         try {
-            // Register user
             authService.register(username, email, password, confirmPasswordField.getText(), role);
-
-            // Success feedback
             info("Welcome!", "Account created successfully. You can log in now.");
-
-            // Redirect to login page
             Router.goToLogin();
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            error("Registration Failed", ex.getMessage());
+        } catch (ValidationException e) {
+            // ValidationException message is user-safe; already logged at WARN in the service
+            warn("Registration Failed", e.getMessage());
+        } catch (AuthorizationException e) {
+            warn("Registration Not Allowed", e.getMessage());
+        } catch (DatabaseOperationException | DataAccessException e) {
+            handleServiceError("register user", e);
+        } catch (Exception e) {
+            handleServiceError("register user", e);
         }
     }
 
