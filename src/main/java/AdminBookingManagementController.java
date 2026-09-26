@@ -14,8 +14,8 @@ public class AdminBookingManagementController {
     @FXML private TableColumn<Booking, Integer> colProperty;
     @FXML private TableColumn<Booking, Integer> colRenter;
     @FXML private TableColumn<Booking, Integer> colOwner;
-    @FXML private TableColumn<Booking, String> colStart;
-    @FXML private TableColumn<Booking, String> colEnd;
+    @FXML private TableColumn<Booking, java.time.LocalDate> colStart;
+    @FXML private TableColumn<Booking, java.time.LocalDate> colEnd;
     @FXML private TableColumn<Booking, Double> colAmount;
     @FXML private TableColumn<Booking, String> colStatus;
 
@@ -28,13 +28,13 @@ public class AdminBookingManagementController {
         colRenter.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getRenterId()).asObject());
         colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getOwnerId()));
         colStart.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getStartDate().toString()));
+                new SimpleObjectProperty<>(data.getValue().getStartDate()));
 
         colEnd.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getEndDate().toString()));
+                new SimpleObjectProperty<>(data.getValue().getEndDate()));
 
         colAmount.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getTotalAmount()));
-        colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
+        colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDisplayStatus()));
 
         loadBookings();
     }
@@ -63,23 +63,28 @@ public class AdminBookingManagementController {
     @FXML
     private void handleApprove() {
         try {
-            // TODO: implement approval logic
-            System.out.println("Approve clicked (Booking Management)");
+            changeStatus(BookingStatus.CONFIRMED);
         } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML
     private void handleReject() {
         try {
-            System.out.println("Reject button clicked ❌");
-            // TODO: Add logic here to update booking status to "REJECTED"
+            changeStatus(BookingStatus.REJECTED);
         } catch (RuntimeException e) { showAlert(e.getMessage()); }
     }
 
     @FXML
     private void handleDelete() {
-        System.out.println("Delete button clicked 🗑️");
-        // TODO: Add logic here to remove the booking record
+        showAlert("Booking history is retained. Cancel the booking instead of deleting it.");
+    }
+    private void changeStatus(BookingStatus status) {
+        Booking selected = bookingTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showAlert("Select a booking first."); return; }
+        if (adminService.updateBookingStatus(selected.getId(),status)) {
+            showAlert("Booking status updated successfully.");
+            loadBookings();
+        }
     }
 
     private void showAlert(String msg) {

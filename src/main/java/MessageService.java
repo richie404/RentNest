@@ -3,6 +3,19 @@ public class MessageService {
     public MessageService() { this(new ServiceAccess()); }
     MessageService(ServiceAccess access) { this.access = access; }
     private final MessageDAO messages=new MessageDAO();
+    public MessageReceipt sendAuthenticated(String token, String requestId, Message message) {
+        User actor = SessionTokens.require(token);
+        if (actor.getId() != message.getSenderId()) throw new SecurityException("Invalid sender");
+        String canonical = java.util.UUID.fromString(requestId).toString();
+        if (!canonical.equals(requestId)) throw new IllegalArgumentException("Invalid request ID");
+        validate(message);
+        MessageReceipt result = messages.insertOnce(canonical,message);
+        Message stored = result.message();
+        if (!java.util.Objects.equals(stored.getListingId(),message.getListingId())
+                || stored.getReceiverId()!=message.getReceiverId() || !stored.getMessageText().equals(message.getMessageText()))
+            throw new IllegalArgumentException("Request ID was already used for a different message");
+        return result;
+    }
     public void sendFromSession(Message message) {
         access.self(message.getSenderId());
         send(message);
@@ -34,7 +47,8 @@ public class MessageService {
     private void validate(Message message) {
         if(message.getSenderId()<=0 || message.getReceiverId()<=0
             || (message.getListingId()!=null && message.getListingId()<=0)
-            || message.getMessageText()==null || message.getMessageText().isBlank())
+            || message.getMessageText()==null || message.getMessageText().isBlank()
+            || message.getMessageText().getBytes(java.nio.charset.StandardCharsets.UTF_8).length>8192)
             throw new IllegalArgumentException("Invalid message participants, listing or text");
         UserDAO users = new UserDAO();
         User sender = users.findById(message.getSenderId()).orElseThrow(() -> new IllegalArgumentException("Sender not found"));

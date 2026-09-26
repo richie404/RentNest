@@ -78,6 +78,14 @@
                             </HBox>
                         </VBox>
 
+                        <VBox styleClass="form-section">
+                            <Label text="End Date (departure date)" styleClass="field-label"/>
+                            <DatePicker fx:id="endDatePicker"
+                                        promptText="Select booking end date"
+                                        styleClass="date-picker"
+                                        style="-fx-cursor: hand;"/>
+                        </VBox>
+
                         <!-- Notes -->
                         <VBox styleClass="form-section">
                             <Label text="Additional Notes (Optional)" styleClass="field-label"/>

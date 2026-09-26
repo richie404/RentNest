@@ -69,10 +69,13 @@ public class AdminService {
         return moderate("USER_DELETE",id,() -> users.delete(id));
     }
     public boolean cancelBooking(int id) {
+        return updateBookingStatus(id,BookingStatus.CANCELLED);
+    }
+    public boolean updateBookingStatus(int id, BookingStatus next) {
         User admin = access.require(Role.ADMIN);
-        return JdbcDAO.transaction(c -> {
-            boolean changed = new BookingService(access).transition(c,admin,id,BookingStatus.CANCELLED);
-            if (changed && !new AdminActionDAO().insert(admin.getId(),"BOOKING_CANCEL",id,"Booking cancelled by administrator"))
+        return JdbcDAO.transaction(java.sql.Connection.TRANSACTION_READ_COMMITTED,c -> {
+            boolean changed = new BookingService(access).transition(c,admin,id,next);
+            if (changed && !new AdminActionDAO().insert(admin.getId(),"BOOKING_"+next.name(),id,"Booking status set to "+next.name()))
                 throw new IllegalStateException("Unable to record audit action");
             return changed;
         });

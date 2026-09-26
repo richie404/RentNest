@@ -15,12 +15,15 @@ public class BookingDAO {
     Optional<Booking> findByIdForUpdate(Connection c, int id) throws SQLException {
         return JdbcDAO.query(c,"SELECT * FROM bookings WHERE id=? FOR UPDATE",DaoMappers::booking,id).stream().findFirst();
     }
-    public boolean delete(int id) { return JdbcDAO.update("DELETE FROM bookings WHERE id=?",id)>0; }
     int countOverlaps(Connection c, int listingId, LocalDate start, LocalDate end, List<BookingStatus> statuses) throws SQLException {
+        return countOverlaps(c,listingId,start,end,statuses,-1);
+    }
+    int countOverlaps(Connection c, int listingId, LocalDate start, LocalDate end, List<BookingStatus> statuses, int excludedBooking) throws SQLException {
         if(statuses.isEmpty()) return 0;
         String placeholders=String.join(",",Collections.nCopies(statuses.size(),"?"));
-        List<Object> values=new ArrayList<>(); values.add(listingId); values.addAll(statuses); values.add(end); values.add(start);
-        return JdbcDAO.query(c,"SELECT COUNT(*) FROM bookings WHERE listing_id=? AND status IN ("+placeholders+") AND start_date<=? AND end_date>=?",
-            r->r.getInt(1),values.toArray()).getFirst();
+        List<Object> values=new ArrayList<>(); values.add(listingId); values.addAll(statuses); values.add(end); values.add(start); values.add(excludedBooking);
+        // Current locking read; also correct when a caller already established a repeatable-read snapshot.
+        return JdbcDAO.query(c,"SELECT id FROM bookings WHERE listing_id=? AND status IN ("+placeholders+") AND start_date<? AND end_date>? AND id<>? FOR UPDATE",
+            r->r.getInt(1),values.toArray()).size();
     }
 }

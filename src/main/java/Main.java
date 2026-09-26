@@ -17,6 +17,10 @@ public class Main extends Application {
 
     @Override
     public void stop() {
+        try { SessionManager.logout(); }
+        catch (RuntimeException failure) { java.util.logging.Logger.getLogger(Main.class.getName()).warning("Unable to revoke session during shutdown"); }
+        Client.getInstance().close();
+        AppExecutor.shutdown();
         Database.close();
     }
 }

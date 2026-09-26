@@ -28,13 +28,13 @@ public class OwnerBookingsController {
 
     @FXML
     private void initialize() {
-        colId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("id"));
-        colProperty.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("listingId"));
-        colRenter.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("renterId"));
-        colStart.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("startDate"));
-        colEnd.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("endDate"));
-        colAmount.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("totalAmount"));
-        colStatus.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("status"));
+        colId.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getId()));
+        colProperty.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getListingId()));
+        colRenter.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getRenterId()));
+        colStart.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getStartDate()));
+        colEnd.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getEndDate()));
+        colAmount.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getTotalAmount()));
+        colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getDisplayStatus()));
     }
 
     private void loadBookings() {

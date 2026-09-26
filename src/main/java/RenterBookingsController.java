@@ -2,7 +2,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 
 public class RenterBookingsController {
 
@@ -27,13 +26,13 @@ public class RenterBookingsController {
     @FXML
     private void initialize() {
         // Map table columns to Booking fields
-        colBookingId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colProperty.setCellValueFactory(new PropertyValueFactory<>("listingId"));
-        colOwner.setCellValueFactory(new PropertyValueFactory<>("ownerId"));
-        colStart.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-        colEnd.setCellValueFactory(new PropertyValueFactory<>("endDate"));
-        colAmount.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colBookingId.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getId()));
+        colProperty.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getListingId()));
+        colOwner.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getOwnerId()));
+        colStart.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getStartDate()));
+        colEnd.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getEndDate()));
+        colAmount.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getTotalAmount()));
+        colStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getDisplayStatus()));
 
         // Load for logged-in renter if available
         int currentUser = (SessionManager.isLoggedIn() ? SessionManager.getLoggedInUser().getId() : -1);

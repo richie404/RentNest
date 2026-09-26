@@ -8,7 +8,7 @@ public class BookingService {
     public boolean createBooking(Booking booking) {
         User renter = access.require(Role.RENTER);
         Validation.dates(booking.getStartDate(), booking.getEndDate());
-        return JdbcDAO.transaction(connection-> {
+        return JdbcDAO.transaction(java.sql.Connection.TRANSACTION_READ_COMMITTED, connection-> {
             Listing listing=listings.findByIdForUpdate(connection,booking.getListingId())
                 .orElseThrow(()->new IllegalArgumentException("Listing no longer exists"));
             if(listing.getOwnerId()==null) throw new IllegalArgumentException("Listing has no owner");
@@ -28,17 +28,18 @@ public class BookingService {
     static java.math.BigDecimal calculateAmount(java.math.BigDecimal monthly, java.time.LocalDate start, java.time.LocalDate end) {
         Validation.money(monthly, false);
         Validation.dates(start, end);
-        long months = java.time.temporal.ChronoUnit.MONTHS.between(start, end);
+        long months = java.time.temporal.ChronoUnit.MONTHS.between(java.time.YearMonth.from(start), java.time.YearMonth.from(end));
+        if (start.plusMonths(months).isAfter(end)) months--;
         java.time.LocalDate anchor = start.plusMonths(months);
         long days = java.time.temporal.ChronoUnit.DAYS.between(anchor, end);
-        long monthDays = java.time.temporal.ChronoUnit.DAYS.between(anchor, anchor.plusMonths(1));
+        long monthDays = java.time.temporal.ChronoUnit.DAYS.between(anchor, start.plusMonths(months+1));
         return Validation.money(monthly.multiply(java.math.BigDecimal.valueOf(months)).add(
             monthly.multiply(java.math.BigDecimal.valueOf(days)).divide(java.math.BigDecimal.valueOf(monthDays), 2, java.math.RoundingMode.HALF_UP)), false);
     }
-    public boolean requestMonth(int listingId, java.time.LocalDate start) {
-        if (start == null) throw new IllegalArgumentException("Select a booking start date");
+    public boolean request(int listingId, java.time.LocalDate start, java.time.LocalDate end) {
+        Validation.dates(start,end);
         Booking booking = new Booking();
-        booking.setListingId(listingId); booking.setStartDate(start); booking.setEndDate(start.plusMonths(1));
+        booking.setListingId(listingId); booking.setStartDate(start); booking.setEndDate(end);
         return createBooking(booking);
     }
     public List<Booking> findByRenter(int id) { access.require(Role.RENTER); access.self(id); return bookings.findByRenter(id); }
@@ -47,17 +48,22 @@ public class BookingService {
     public boolean updateStatus(int id, BookingStatus next) {
         User actor = access.current();
         if (actor.getRole() == Role.ADMIN) {
-            if (next != BookingStatus.CANCELLED) throw new IllegalArgumentException("Use administrator moderation commands");
-            return new AdminService(access).cancelBooking(id);
+            return new AdminService(access).updateBookingStatus(id,next);
         }
-        return JdbcDAO.transaction(c -> transition(c, actor, id, next));
+        return JdbcDAO.transaction(java.sql.Connection.TRANSACTION_READ_COMMITTED, c -> transition(c, actor, id, next));
     }
     boolean transition(java.sql.Connection c, User actor, int id, BookingStatus next) throws java.sql.SQLException {
+        Booking reference = bookings.findById(id).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        // Same parent-first lock order as creation, including owner/admin decisions.
+        Listing listing = listings.findByIdForUpdate(c,reference.getListingId()).orElseThrow(() -> new IllegalArgumentException("Listing not found"));
         Booking booking = bookings.findByIdForUpdate(c,id).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
-        boolean owner = actor.getRole() == Role.OWNER && Objects.equals(booking.getOwnerId(),actor.getId());
+        boolean owner = actor.getRole() == Role.OWNER && Objects.equals(booking.getOwnerId(),actor.getId())
+            && Objects.equals(listing.getOwnerId(),actor.getId());
         boolean renter = actor.getRole() == Role.RENTER && booking.getRenterId() == actor.getId();
         if (actor.getRole() != Role.ADMIN && !owner && !renter) throw new SecurityException("This booking belongs to another user");
         if (renter && next != BookingStatus.CANCELLED) throw new SecurityException("Renters may only cancel bookings");
+        if (booking.getEndDate() == null || !booking.getEndDate().isAfter(java.time.LocalDate.now()))
+            throw new IllegalArgumentException("Ended bookings are historical records and cannot be changed");
         BookingStatus current = booking.getBookingStatus();
         if (renter && (current == BookingStatus.CONFIRMED || current == BookingStatus.APPROVED))
             throw new IllegalArgumentException("Confirmed bookings cannot be cancelled directly");
@@ -66,6 +72,13 @@ public class BookingService {
                 || (next != BookingStatus.CANCELLED && (!current.isPending()
                     || (next != BookingStatus.CONFIRMED && next != BookingStatus.REJECTED))))
             throw new IllegalArgumentException("Invalid booking status transition");
+        if (next == BookingStatus.CONFIRMED) {
+            if (!ListingService.isPublic(listing) || booking.getStartDate().isBefore(java.time.LocalDate.now()))
+                throw new IllegalArgumentException("This listing or booking period is no longer available for approval");
+            List<BookingStatus> occupying = Arrays.stream(BookingStatus.values()).filter(BookingStatus::blocksAvailability).toList();
+            if (bookings.countOverlaps(c,booking.getListingId(),booking.getStartDate(),booking.getEndDate(),occupying,id)>0)
+                throw new IllegalArgumentException("Another booking reserves this period");
+        }
         return bookings.updateStatus(id,next);
     }
 }

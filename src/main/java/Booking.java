@@ -26,6 +26,18 @@ public class Booking {
     public double getTotalAmount() { return totalAmount == null ? 0 : totalAmount.doubleValue(); }
     public String getStatus() { return status.name(); }
     public BookingStatus getBookingStatus() { return status; }
+    /** Lifecycle is derived; historical confirmed rows need no destructive status rewrite. */
+    public String getLifecycle() {
+        if (status != BookingStatus.CONFIRMED && status != BookingStatus.APPROVED) return status.name();
+        LocalDate today = LocalDate.now();
+        if (endDate != null && !today.isBefore(endDate)) return "COMPLETED";
+        if (startDate != null && !today.isBefore(startDate)) return "ACTIVE";
+        return "UPCOMING";
+    }
+    public String getDisplayStatus() {
+        String lifecycle = getLifecycle();
+        return lifecycle.equals("ACTIVE") || lifecycle.equals("COMPLETED") ? lifecycle : getStatus();
+    }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setId(int value) { id=value; }
     public void setListingId(int value) { listingId=value; }

@@ -20,6 +20,8 @@ Migration location: src/main/resources/db/migration/
 | Adoption callback only | beforeBaseline.sql | Checks all 11 canonical tables, 73 column names/types and six enum definitions; rejects an unresolved socket_messages table. Does not alter application tables or rows. |
 | 1 | V1__initial_rentnest_schema.sql | Creates the canonical schema before Phase 2, including title and price_month. Structure only; no sample users, passwords or listings. |
 | 2 | V2__domain_consistency_and_constraints.sql | Applies the Phase 2 required fields, checks, primary-photo uniqueness and index replacements while preserving rows. Accepts a schema already corrected manually. |
+| 3 | V3__authentication_sessions_and_email_uniqueness.sql | Adds normalized-email uniqueness and expiring/revocable session-token storage. |
+| 4 | V4__booking_dates_and_history_retention.sql | Enforces positive booking duration and prevents parent deletions from erasing booking history. |
 
 Phase 1 corrected Java queries; it did not require renaming database columns.
 V1 therefore uses the already-canonical database names. V2 is derived from the
@@ -74,8 +76,9 @@ With the connection configured:
 .\mvnw.cmd flyway:info
 ```
 
-V1 creates the 11 application tables; V2 applies the consistency constraints. Flyway
-adds its history table. Both versions should show Success. No baseline command is
+V1 creates the 11 original application tables; V2 applies consistency constraints;
+V3 adds sessions/email uniqueness; V4 protects booking dates/history. Flyway
+adds its history table. All four versions should show Success. No baseline command is
 used for a fresh database. No demo/admin account is created. Do not import rentnest.sql
 after migrating: that legacy snapshot includes CREATE TABLE statements and demo data.
 
@@ -103,7 +106,9 @@ after migrating: that legacy snapshot includes CREATE TABLE statements and demo 
 The configured baselineVersion is **1**, even if Phase 2 was already applied manually.
 Baseline records adoption without executing V1 or recreating application tables.
 V2 then applies missing corrections or recognizes those already present and records
-its checksum. Expect V1 to be Ignored (Baseline), a version-1 BASELINE row, and V2 Success.
+its checksum. V3 and V4 then apply. Expect V1 to be Ignored (Baseline), a version-1
+BASELINE row, and V2/V3/V4 Success. Review the [authentication](../docs/authentication-security.md)
+and [booking](../docs/booking-hardening.md) preflight checks before upgrading.
 Do not baseline at 2, which would skip V2's checks.
 
 If the database already has Flyway history, skip baseline and use info, validate and

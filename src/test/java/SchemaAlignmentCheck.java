@@ -184,7 +184,6 @@ public class SchemaAlignmentCheck {
         expect("UPDATE bookings","CANCELLED",81);
         new BookingDAO().updateStatus(81,BookingStatus.CONFIRMED);
         expect("UPDATE bookings","CONFIRMED",81);
-        new BookingDAO().delete(81);
         new FavoritesDAO().insert(13,91);
         expect("INSERT INTO favorites",13,91);
         new FavoritesDAO().delete(13,91);

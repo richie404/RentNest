@@ -28,7 +28,8 @@ public final class Validation {
         return value;
     }
     public static void dates(LocalDate start, LocalDate end) {
-        if (start == null || end == null || start.isBefore(LocalDate.now()) || !end.isAfter(start))
+        if (start == null || end == null || start.isBefore(LocalDate.now()) || !end.isAfter(start)
+                || start.getYear() > 9999 || end.getYear() > 9999)
             throw new IllegalArgumentException("Booking dates must start today or later and end after the start");
     }
 }

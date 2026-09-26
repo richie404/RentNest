@@ -121,6 +121,9 @@ See the [Phase 5 model and DAO report](docs/model-dao-refactor.md) for persisten
 contracts, service boundaries, transaction behavior and verification commands.
 The [Phase 6 service-layer report](docs/service-layer.md) documents authorization,
 validation, booking pricing, admin auditing and integration checks.
+See [Phase 7 authentication security](docs/authentication-security.md) and
+[Phase 8 booking hardening](docs/booking-hardening.md) for the current session,
+date/transition rules, tests and required V3/V4 migrations.
 
 From the project root directory, run:
 

@@ -17,7 +17,7 @@ public class MessageController {
     @FXML private Label chatTitle;
     @FXML private ScrollPane scrollPane;
 
-    private final MessageService messageService = new MessageService();
+    private ChatConversation conversation;
     private int listingId;
     private int senderId;
     private int receiverId;
@@ -31,19 +31,6 @@ public class MessageController {
         // a little padding safety
         messageContainer.setPadding(new Insets(12));
 
-        // live updates from your Client
-        Client.getInstance().addMessageListener(msg -> {
-            boolean relevant =
-                    (msg.getSenderId() == senderId && msg.getReceiverId() == receiverId) ||
-                            (msg.getSenderId() == receiverId && msg.getReceiverId() == senderId);
-
-            if (relevant && java.util.Objects.equals(msg.getListingId(), listingId)) {
-                Platform.runLater(() -> {
-                    appendMessage(msg);
-                    autoScrollToBottom();
-                });
-            }
-        });
     }
 
     public void loadChat(int listingId, int senderId, int receiverId, String title) {
@@ -52,30 +39,15 @@ public class MessageController {
         this.receiverId = receiverId;
         if (chatTitle != null) chatTitle.setText("Chat • " + title);
 
-        if (!Client.getInstance().isConnected()) {
-            Client.getInstance().connect("127.0.0.1", 5000, senderId);
-        }
-        loadMessagesAsync();
-    }
-
-    private void loadMessagesAsync() {
-        Task<List<Message>> task = new Task<>() {
-            @Override
-            protected List<Message> call() throws Exception {
-                return messageService.findConversation(listingId, senderId, receiverId);
-            }
-        };
-        task.setOnSucceeded(e -> {
+        if (conversation != null) conversation.close();
+        conversation = new ChatConversation(messageContainer, listingId, senderId, receiverId, rows -> {
             messageContainer.getChildren().clear();
-            task.getValue().forEach(this::appendMessage);
+            rows.forEach(this::appendMessage);
             autoScrollToBottom();
-        });
-        task.setOnFailed(e -> messageContainer.getChildren().add(
-                new Label("⚠️ Failed to load messages: " + task.getException().getMessage())
-        ));
-        AppExecutor.getExecutor().submit(task);
+        }, error -> messageContainer.getChildren().add(new Label(error)));
     }
 
+    private void loadMessagesAsync() { if (conversation != null) conversation.refresh(); }
     /* -----------------------------------------------------------
        🗨️ Proper bubble rows with spacers (like real chat apps)
        ----------------------------------------------------------- */
@@ -115,40 +87,15 @@ public class MessageController {
         String text = messageField.getText().trim();
         if (text.isEmpty()) return;
 
-        Message newMsg = new Message();
-        newMsg.setListingId(listingId);
-        newMsg.setSenderId(senderId);
-        newMsg.setReceiverId(receiverId);
-        newMsg.setMessageText(text);
-
-        if (Client.getInstance().isConnected()) {
-            try { messageService.validateFromSession(newMsg); }
-            catch (RuntimeException e) {
-                messageContainer.getChildren().add(new Label("Failed to send message: " + e.getMessage()));
-                return;
-            }
-            // The server persists once before forwarding to the receiver.
-            Client.getInstance().sendMessage(listingId, senderId, receiverId, text);
-        } else {
-            // Preserve offline database sending, without also sending over the socket.
-            Task<Void> saveTask = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    new MessageService().sendFromSession(newMsg);
-                    return null;
-                }
-            };
-            saveTask.setOnFailed(e -> messageContainer.getChildren().add(
-                    new Label("Failed to save message: " + saveTask.getException().getMessage())));
-            AppExecutor.getExecutor().submit(saveTask);
-        }
-
-        // instant UI
-        appendMessage(newMsg);
-        messageField.clear();
-        autoScrollToBottom();
+        if (conversation == null) return;
+        sendButton.setDisable(true);
+        ChatConversation active = conversation;
+        active.send(text).whenComplete((message, failure) -> active.ui(() -> {
+            sendButton.setDisable(false);
+            if (failure == null) { if (messageField.getText().trim().equals(text)) messageField.clear(); }
+            else messageContainer.getChildren().add(new Label("Send not confirmed; refresh history before retrying."));
+        }));
     }
-
     @FXML private void handleRefresh() { loadMessagesAsync(); }
 
     private void autoScrollToBottom() {
@@ -160,6 +107,7 @@ public class MessageController {
 
     // if you have a Back button in FXML
     @FXML private void handleBack() {
+        if (conversation != null) conversation.close();
         ((Stage) chatTitle.getScene().getWindow()).close();
     }
 }

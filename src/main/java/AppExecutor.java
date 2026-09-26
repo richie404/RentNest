@@ -22,5 +22,7 @@ public class AppExecutor {
     /** Optional: shutdown gracefully when app closes */
     public static void shutdown() {
         executor.shutdown();
+        try { if (!executor.awaitTermination(3,java.util.concurrent.TimeUnit.SECONDS)) executor.shutdownNow(); }
+        catch (InterruptedException interrupted) { executor.shutdownNow();Thread.currentThread().interrupt(); }
     }
 }

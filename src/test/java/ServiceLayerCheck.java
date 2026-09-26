@@ -45,13 +45,13 @@ public class ServiceLayerCheck {
             rejects(() -> new InquiryService(ownerAccess).updateStatus(inquiry,InquiryStatus.REPLIED));
             BookingService renterBookings = new BookingService(renterAccess);
             int ownProperty = dao.insert(listing().setOwnerId(renter).setStatus("APPROVED"));
-            rejects(() -> renterBookings.requestMonth(ownProperty,LocalDate.now().plusDays(1)));
+            rejects(() -> renterBookings.request(ownProperty,LocalDate.now().plusDays(1),LocalDate.now().plusDays(5)));
             int unavailable = dao.insert(listing().setOwnerId(owner).setStatus("APPROVED").setAvailable(false));
-            rejects(() -> renterBookings.requestMonth(unavailable,LocalDate.now().plusDays(1)));
-            rejects(() -> new BookingService(ownerAccess).requestMonth(id,LocalDate.now().plusDays(1)));
-            rejects(() -> renterBookings.requestMonth(id,LocalDate.now().minusDays(1)));
+            rejects(() -> renterBookings.request(unavailable,LocalDate.now().plusDays(1),LocalDate.now().plusDays(5)));
+            rejects(() -> new BookingService(ownerAccess).request(id,LocalDate.now().plusDays(1),LocalDate.now().plusDays(5)));
+            rejects(() -> renterBookings.request(id,LocalDate.now().minusDays(1),LocalDate.now().plusDays(5)));
             LocalDate start = LocalDate.of(2099,1,31);
-            check(renterBookings.requestMonth(id,start), "Month booking succeeds");
+            check(renterBookings.request(id,start,start.plusMonths(1)), "Month booking succeeds");
             Booking booking = new BookingDAO().findByRenter(renter).getFirst();
             check(booking.getTotalAmountValue().compareTo(new BigDecimal("3100.00")) == 0, "End-of-month charge is one monthly rate");
             check(booking.getBookingStatus() == BookingStatus.PENDING_OWNER_APPROVAL, "Service sets initial status");
@@ -78,7 +78,7 @@ public class ServiceLayerCheck {
             new MessageService(renterAccess).sendFromSession(new Message(null,renter,owner,"Valid sender"));
             ownerListings.update(dao.findById(id).orElseThrow().setTitle("Edited"));
             check(new ListingService(renterAccess).findById(id).isEmpty(), "Edits require approval again");
-            rejects(() -> renterBookings.requestMonth(id,LocalDate.of(2099,4,1)));
+            rejects(() -> renterBookings.request(id,LocalDate.of(2099,4,1),LocalDate.of(2099,5,1)));
             check(Database.dataSource().getHikariPoolMXBean().getActiveConnections() == 0,"No connection leaks");
             System.out.println("PASS: service authorization, validation, pricing, transitions, visibility, favorites, inquiries, messaging and atomic admin audit rollback");
         } finally { Database.close(); }

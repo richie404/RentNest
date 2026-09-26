@@ -8,6 +8,7 @@ public class BookPropertyController {
     @FXML private TextField renterNameField;
     @FXML private TextField renterContactField;
     @FXML private DatePicker startDatePicker;
+    @FXML private DatePicker endDatePicker;
     @FXML private TextArea noteField;
 
     private Listing listing;
@@ -36,13 +37,15 @@ public class BookPropertyController {
                 return;
             }
 
-            if (bookingService.requestMonth(listing.getId(), startDate)) {
+            if (bookingService.request(listing.getId(), startDate, endDatePicker.getValue())) {
                 showAlert("Booking Confirmed",
                         "Your booking request has been sent to the property owner for approval.");
                 Router.goToDashboard();
             } else {
                 showAlert("Unavailable", "This property is already booked for the selected period.");
             }
+        } catch (IllegalArgumentException | SecurityException e) {
+            showAlert("Booking Not Created", e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error", "Failed to create booking. Please try again.");

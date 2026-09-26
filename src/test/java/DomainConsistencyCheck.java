@@ -85,7 +85,10 @@ public class DomainConsistencyCheck {
                 count++;
             }
         }
-        check(count == 16, "All sixteen foreign keys present");
+        try (ResultSet tables = db.getMetaData().getTables(db.getCatalog(), null, "auth_sessions", new String[]{"TABLE"})) {
+            int expected = tables.next() ? 17 : 16;
+            check(count == expected, "All original foreign keys and the optional V3 session foreign key present");
+        }
     }
 
     private static void checkConstraints(Connection db) throws SQLException {

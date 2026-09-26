@@ -20,8 +20,12 @@ final class JdbcDAO {
         catch (SQLException e) { throw new DataAccessException("Database operation failed", e); }
     }
     static <T> T transaction(Work<T> work) {
+        return transaction(null, work);
+    }
+    static <T> T transaction(Integer isolation, Work<T> work) {
         if (TRANSACTION.get() != null) throw new IllegalStateException("Nested transactions are not supported");
         return connection(c -> {
+            if (isolation != null) c.setTransactionIsolation(isolation);
             c.setAutoCommit(false);
             TRANSACTION.set(c);
             try {

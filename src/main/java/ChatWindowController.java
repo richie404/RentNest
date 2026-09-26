@@ -29,7 +29,7 @@ public class ChatWindowController {
     private int senderId;    // current user
     private int receiverId;
 
-    private final MessageService messageService = new MessageService();
+    private ChatConversation conversation;
 
     // called by PropertyDetails / Dashboards
     public void initChat(int listingId, int senderId, int receiverId, String propertyTitle) {
@@ -43,49 +43,27 @@ public class ChatWindowController {
         messages.prefWidthProperty().bind(scroll.widthProperty().subtract(18));
         messages.setFillWidth(true);
 
-        // load history
-        loadHistory();
-    }
-
-    private void loadHistory() {
-        try {
-            List<Message> history = messageService.findConversation(listingId, senderId, receiverId);
+        if (conversation != null) conversation.close();
+        conversation = new ChatConversation(messages, listingId, senderId, receiverId, rows -> {
             messages.getChildren().clear();
-            for (Message m : history) {
-                appendBubble(m.getMessageText(),
-                        m.getSenderId() == senderId,
-                        m.getTimestamp() != null ? m.getTimestamp() : LocalDateTime.now());
-            }
+            for (Message message : rows) appendBubble(message.getMessageText(), message.getSenderId() == senderId,
+                    message.getTimestamp() == null ? LocalDateTime.now() : message.getTimestamp());
             autoScroll();
-        } catch (Exception e) {
-            appendSystem("⚠️ Failed to load messages: " + e.getMessage());
-        }
+        }, this::appendSystem);
     }
 
     @FXML
     private void handleSend() {
         String text = input.getText().trim();
-        if (text.isEmpty()) return;
-
-        LocalDateTime now = LocalDateTime.now();
-
-        // UI first
-        appendBubble(text, true, now);
-        input.clear();
-        autoScroll();
-
-        // persist
-        try {
-            Message m = new Message(listingId, senderId, receiverId, text);
-            new MessageService().sendFromSession(m);
-        } catch (Exception e) {
-            appendSystem("⚠️ Save failed: " + e.getMessage());
-        }
-
-        // (optional) socket send here if you’re using your Client
-        // Client.getInstance().sendMessage(listingId, senderId, receiverId, text);
+        if (text.isEmpty() || conversation == null) return;
+        sendButton.setDisable(true);
+        ChatConversation active = conversation;
+        active.send(text).whenComplete((message, failure) -> active.ui(() -> {
+            sendButton.setDisable(false);
+            if (failure == null) { if (input.getText().trim().equals(text)) input.clear(); }
+            else appendSystem("Send not confirmed; refresh history before retrying.");
+        }));
     }
-
     /* ===== UI helpers ===== */
 
     private void appendSystem(String text) {
@@ -135,6 +113,7 @@ public class ChatWindowController {
 
     @FXML
     private void handleBack() {
+        if (conversation != null) conversation.close();
         Stage st = (Stage) chatTitle.getScene().getWindow();
         st.close();
     }

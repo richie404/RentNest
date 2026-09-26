@@ -1,35 +1,23 @@
-import java.io.*;
-import java.net.*;
 import java.util.function.Consumer;
-
-public class ChatClient {
-    private Socket socket;
-    private PrintWriter out;
-
-    public void connect(String host, int port, Consumer<String> onMessage) {
-        new Thread(() -> {
-            try {
-                socket = new Socket(host, port);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
-
-                String msg;
-                while ((msg = in.readLine()) != null) {
-                    onMessage.accept(msg);
-                }
-            } catch (IOException e) {
-                onMessage.accept("❌ Connection lost");
-            }
-        }).start();
+import javafx.application.Platform;
+/** Compatibility facade; all networking is delegated to the canonical Client. */
+public class ChatClient implements AutoCloseable {
+    private final Client client=new Client();
+    private Consumer<String> callback;
+    private Client.MessageListener listener;
+    private volatile boolean closed;
+    public void connect(String host,int port,Consumer<String> onMessage) {
+        callback=onMessage;
+        if(listener!=null)client.removeMessageListener(listener);
+        listener=m->Platform.runLater(()->{if(!closed)callback.accept((m.getListingId()==null?-1:m.getListingId())+"|"+m.getSenderId()+"|"+m.getReceiverId()+"|"+m.getMessageText());});
+        client.addMessageListener(listener);
+        client.connect(host,port,0).whenComplete((unused,failure)->{if(failure!=null)Platform.runLater(()->callback.accept("Chat authentication failed"));});
     }
-
-    public void send(String message) {
-        if (out != null) out.println(message);
+    public void send(String line) {
+        String[] fields=line.split("\\|",4);
+        if(fields.length!=4)throw new IllegalArgumentException("Expected listing|sender|receiver|message");
+        client.sendMessage(ChatProtocol.listing(fields[0]),Integer.parseInt(fields[1]),Integer.parseInt(fields[2]),fields[3])
+            .whenComplete((message,failure)->{if(failure!=null&&callback!=null)Platform.runLater(()->callback.accept("Send not confirmed"));});
     }
-
-    public void close() {
-        try {
-            if (socket != null) socket.close();
-        } catch (IOException ignored) {}
-    }
+    @Override public void close(){closed=true;client.close();}
 }

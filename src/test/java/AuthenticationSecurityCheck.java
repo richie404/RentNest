@@ -65,9 +65,11 @@ public class AuthenticationSecurityCheck {
         } finally { SessionManager.logout(); Database.close(); }
     }
     private static void testSockets(String senderToken,String receiverToken,String otherToken,int sender,int receiver,int other) throws Exception {
-        Thread first = new Thread(() -> Server.main(new String[0])); first.setDaemon(true); first.start();
-        Thread second = new Thread(() -> ChatServer.main(new String[0])); second.setDaemon(true); second.start();
-        for (int port : new int[]{5000,5050}) {
+        // Dedicated test ports: never send fixtures to an existing production chat server.
+        try (ServerSocket firstPort = new ServerSocket(35170); ServerSocket secondPort = new ServerSocket(35171)) { }
+        Thread first = new Thread(() -> Server.main(new String[]{"35170"})); first.setDaemon(true); first.start();
+        Thread second = new Thread(() -> ChatServer.main(new String[]{"35171"})); second.setDaemon(true); second.start();
+        for (int port : new int[]{35170,35171}) {
             try (Peer denied = peer(port)) {
                 denied.send("REGISTER " + sender);
                 check(denied.read() == null,"Claimed IDs are rejected");
@@ -76,10 +78,10 @@ public class AuthenticationSecurityCheck {
                 s.send("REGISTER " + senderToken); r.send("REGISTER " + receiverToken); outsider.send("REGISTER " + otherToken);
                 Thread.sleep(250);
                 String text = "private security fixture " + port;
-                String line = port == 5000 ? "MSG\t-1\t"+sender+"\t"+receiver+"\t"+Base64.getEncoder().encodeToString(text.getBytes(StandardCharsets.UTF_8))
+                String line = port == 35170 ? "MSG\t-1\t"+sender+"\t"+receiver+"\t"+Base64.getEncoder().encodeToString(text.getBytes(StandardCharsets.UTF_8))
                     : "-1|"+sender+"|"+receiver+"|"+text;
                 s.send(line); check(line.equals(r.read()),"Authenticated private delivery"); outsider.silence();
-                String forged = port == 5000 ? "MSG\t-1\t"+other+"\t"+receiver+"\t"+Base64.getEncoder().encodeToString("forged".getBytes(StandardCharsets.UTF_8))
+                String forged = port == 35170 ? "MSG\t-1\t"+other+"\t"+receiver+"\t"+Base64.getEncoder().encodeToString("forged".getBytes(StandardCharsets.UTF_8))
                     : "-1|"+other+"|"+receiver+"|forged";
                 s.send(forged); r.silence();
                 check(new MessageDAO().findByUser(other).isEmpty(),"Forged sender never persisted");
